@@ -15,6 +15,54 @@ import { MaterialPage } from './pages/MaterialPage';
 import { AboutPage } from './pages/AboutPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
+// Route-specific factual metadata configuration for all 7 routes
+interface RouteMetadata {
+  title: string;
+  description: string;
+}
+
+const ROUTE_METADATA: Record<string, RouteMetadata> = {
+  '/': {
+    title: 'MAH★P — Nocturnal Textile Theatre',
+    description: 'Portfolio of fashion, textile architecture, photography, and visual-art work by Aurelia Mahop Di Toro.',
+  },
+  '/work': {
+    title: 'Work Archive — MAH★P',
+    description: "Archive of selected fashion, textile, and photographic projects including L'ETOILE MAHO, MAH★P, and AURORA DE LIAGE X AURO DA'PUNK.",
+  },
+  '/work/letoile-maho': {
+    title: "L'ETOILE MAHO — MAH★P",
+    description: "L'ETOILE MAHO: fashion collection across planetary chapters Mercury, Uranus, Pluto, and Mars. Clothing by Aurelia Mahop Di Toro; photography by Sirine.",
+  },
+  '/work/mah-star-p': {
+    title: 'MAH★P — MAH★P',
+    description: 'MAH★P: white collage interlude and fashion photography series. Photography by Avi Bellaiche; model BAAN.',
+  },
+  '/work/aurora-de-liage-x-auro-dapunk': {
+    title: "AURORA DE LIAGE X AURO DA'PUNK — MAH★P",
+    description: "AURORA DE LIAGE X AURO DA'PUNK: collage composition and editorial photography sequence. Dress by Aurelia Mahop Di Toro; photography by Raphaël Kassouri.",
+  },
+  '/material': {
+    title: 'Material Library (27 Swatches) — MAH★P',
+    description: 'Provisional object repertory of 27 textile swatch candidates preserving knit structures and material specimens.',
+  },
+  '/about': {
+    title: 'About & Contact — MAH★P',
+    description: 'Artistic portfolio information and direct enquiry contact for Aurelia Mahop Di Toro.',
+  },
+};
+
+function updateMetaTag(name: string, content: string, isProperty = false) {
+  const attr = isProperty ? 'property' : 'name';
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, name);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
 // Module-level document session guard:
 // Ensures the signature intro loader runs strictly once per document session (initial tab load or full browser reload).
 // Internal SPA navigation, router changes, and component rerenders never re-trigger the loader.
@@ -45,34 +93,19 @@ function AppContent() {
     }
   }, [normalizedPath, showIntro, handleIntroComplete]);
 
-  // Sync document title dynamically per route with official MAH★P brand
+  // Synchronise document title, description, and OpenGraph/Twitter metadata dynamically per route
   useEffect(() => {
-    switch (normalizedPath) {
-      case '/':
-        document.title = 'MAH★P — Nocturnal Textile Theatre';
-        break;
-      case '/work':
-        document.title = 'Work Archive — MAH★P';
-        break;
-      case '/work/letoile-maho':
-        document.title = "L'ETOILE MAHO — MAH★P";
-        break;
-      case '/work/mah-star-p':
-        document.title = 'MAH★P — MAH★P';
-        break;
-      case '/work/aurora-de-liage-x-auro-dapunk':
-        document.title = "AURORA DE LIAGE X AURO DA'PUNK — MAH★P";
-        break;
-      case '/material':
-        document.title = 'Material Library (27 Swatches) — MAH★P';
-        break;
-      case '/about':
-        document.title = 'About & Contact — MAH★P';
-        break;
-      default:
-        document.title = '404 Not Found — MAH★P';
-        break;
-    }
+    const meta = ROUTE_METADATA[normalizedPath] || {
+      title: '404 Not Found — MAH★P',
+      description: 'The requested page could not be found.',
+    };
+
+    document.title = meta.title;
+    updateMetaTag('description', meta.description);
+    updateMetaTag('og:title', meta.title, true);
+    updateMetaTag('og:description', meta.description, true);
+    updateMetaTag('twitter:title', meta.title);
+    updateMetaTag('twitter:description', meta.description);
   }, [normalizedPath]);
 
   // Route selector

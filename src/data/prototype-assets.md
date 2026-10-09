@@ -29,34 +29,34 @@
 
 ## 2. Provisional Material Swatches (`SWATCH-01` to `SWATCH-27`)
 
-All 27 provisional swatch records are retained per Blueprint §6.5 to prevent accidental data loss prior to direct source inspection. Candidate source pages: 2, 5, 9, 11, 13, 15, 16, 18.
+All 27 provisional swatch records are retained per Blueprint §6.5 to prevent accidental data loss prior to direct source inspection. Candidate source pages across the collection: 2, 5, 9, 11, 13, 15, 16, 18. Individual swatch-to-page mappings and duplicate classifications remain provisional pending source artwork verification.
 
-| Asset ID | Label | Candidate Page | Aspect Ratio | Classification | Status |
+| Asset ID | Label | Candidate Source Mapping | Aspect Ratio (Proposed Layout) | Classification | Status |
 |---|---|---|---|---|---|
-| `SWATCH-01` | Material 01 | Page 2 | 4:5 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-02` | Material 02 | Page 5 | 1:1 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-03` | Material 03 | Page 9 | 3:4 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-04` | Material 04 | Page 11 | 4:5 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-05` | Material 05 | Page 13 | 1:1 | Duplicate suspect | STRUCTURAL PLACEHOLDER |
-| `SWATCH-06` | Material 06 | Page 15 | 3:4 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-07` | Material 07 | Page 16 | 4:5 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-08` | Material 08 | Page 18 | 1:1 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-09` | Material 09 | Page 2 | 3:4 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-10` | Material 10 | Page 5 | 4:5 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-11` | Material 11 | Page 9 | 1:1 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-12` | Material 12 | Page 11 | 3:4 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-13` | Material 13 | Page 13 | 4:5 | Duplicate suspect | STRUCTURAL PLACEHOLDER |
-| `SWATCH-14` | Material 14 | Page 15 | 1:1 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-15` | Material 15 | Page 16 | 3:4 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-16` | Material 16 | Page 18 | 4:5 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-17` | Material 17 | Page 2 | 1:1 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-18` | Material 18 | Page 5 | 3:4 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-19` | Material 19 | Page 9 | 4:5 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-20` | Material 20 | Page 11 | 1:1 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-21` | Material 21 | Page 13 | 3:4 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-22` | Material 22 | Page 15 | 4:5 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-23` | Material 23 | Page 16 | 1:1 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-24` | Material 24 | Page 18 | 3:4 | Duplicate suspect | STRUCTURAL PLACEHOLDER |
-| `SWATCH-25` | Material 25 | Page 2 | 4:5 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-26` | Material 26 | Page 5 | 1:1 | Distinct candidate | STRUCTURAL PLACEHOLDER |
-| `SWATCH-27` | Material 27 | Page 9 | 3:4 | Distinct candidate | STRUCTURAL PLACEHOLDER |
+| `SWATCH-01` | Material 01 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-02` | Material 02 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-03` | Material 03 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-04` | Material 04 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-05` | Material 05 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-06` | Material 06 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-07` | Material 07 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-08` | Material 08 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-09` | Material 09 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-10` | Material 10 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-11` | Material 11 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-12` | Material 12 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-13` | Material 13 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-14` | Material 14 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-15` | Material 15 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-16` | Material 16 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-17` | Material 17 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-18` | Material 18 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-19` | Material 19 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-20` | Material 20 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-21` | Material 21 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-22` | Material 22 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-23` | Material 23 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-24` | Material 24 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-25` | Material 25 | Mapping pending verification | 4:5 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-26` | Material 26 | Mapping pending verification | 1:1 | Candidate review | STRUCTURAL PLACEHOLDER |
+| `SWATCH-27` | Material 27 | Mapping pending verification | 3:4 | Candidate review | STRUCTURAL PLACEHOLDER |

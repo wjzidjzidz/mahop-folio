@@ -40,9 +40,9 @@ export interface ProjectData {
 export interface MaterialSwatch {
   id: string; // e.g. SWATCH-01
   label: string; // e.g. "Material 01"
-  provisionalPage: string; // e.g. "Page 2" or "Candidate pages: 2, 5, 9, 11, 13, 15, 16, 18"
-  classification: 'distinct' | 'candidate_review' | 'duplicate_suspect';
-  aspectRatio: string;
+  provisionalPage: string; // "Source page mapping pending verification"
+  classification: 'candidate_review';
+  aspectRatio: string; // Proposed prototype layout ratio
   textureHint: string;
 }
 
@@ -134,30 +134,19 @@ export const PROJECTS: Record<string, ProjectData> = {
 };
 
 // 27 Provisional Material Swatch Inventory (SWATCH-01 to SWATCH-27)
-// Preserves all 27 candidate objects per Master Blueprint Section 6.5
+// Preserves all 27 candidate objects per Master Blueprint Section 6.5.
+// Candidate source pages across collection: 2, 5, 9, 11, 13, 15, 16, 18.
+// Individual page mappings, distinctness, and material properties remain unverified pending direct source inspection.
 export const MATERIAL_SWATCHES: MaterialSwatch[] = Array.from({ length: 27 }, (_, i) => {
   const num = String(i + 1).padStart(2, '0');
-  const candidatePages = [2, 5, 9, 11, 13, 15, 16, 18];
-  const assignedCandidatePage = candidatePages[i % candidatePages.length];
-  
-  // Rhythms of texture variations for the structural representation
-  const textures = [
-    'Ribbed open-knit textile relief',
-    'Tactile wool loop structure',
-    'Dense weave jacquard surface',
-    'Deconstructed yarn fringe detail',
-    'Open-mesh gauge knit structure',
-    'Textured boucle tactile sample',
-    'Layered structural textile relief',
-    'Folded geometric weave study',
-  ];
 
   return {
     id: `SWATCH-${num}`,
     label: `Material ${num}`,
-    provisionalPage: `Candidate source page ${assignedCandidatePage}`,
-    classification: i === 4 || i === 12 || i === 23 ? 'duplicate_suspect' : 'distinct',
+    provisionalPage: 'Source page mapping pending verification',
+    classification: 'candidate_review',
+    // Proposed prototype layout aspect ratios (not measured physical swatch dimensions)
     aspectRatio: i % 3 === 0 ? '4/5' : i % 3 === 1 ? '1/1' : '3/4',
-    textureHint: textures[i % textures.length],
+    textureHint: 'Textile specimen details pending source verification',
   };
 });

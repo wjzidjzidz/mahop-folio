@@ -6,12 +6,11 @@ import { ZoomIn, Info } from 'lucide-react';
 
 export function MaterialPage() {
   const [selectedSwatch, setSelectedSwatch] = useState<MaterialSwatch | null>(null);
-  const [filter, setFilter] = useState<'all' | 'distinct' | 'review'>('all');
+  const [filter, setFilter] = useState<'all' | 'review'>('all');
   const triggerRef = useRef<HTMLElement | null>(null);
 
   const filteredSwatches = MATERIAL_SWATCHES.filter((swatch) => {
-    if (filter === 'distinct') return swatch.classification === 'distinct';
-    if (filter === 'review') return swatch.classification === 'duplicate_suspect';
+    if (filter === 'review') return swatch.classification === 'candidate_review';
     return true;
   });
 
@@ -35,11 +34,11 @@ export function MaterialPage() {
 
         <div className="max-w-md space-y-3 text-xs text-[#B8B5B1] font-mono leading-relaxed">
           <p>
-            An archive of 27 provisional textile-swatch objects. Preserving knit loops, ribbed reliefs, and tactile structural specimens.
+            An archive of 27 provisional textile-swatch objects. All records maintained pending physical source inspection and deduplication.
           </p>
           <div className="flex items-center gap-2 text-[11px] text-[#F5F3EF]">
             <Info className="w-3.5 h-3.5 shrink-0 text-[#B8B5B1]" />
-            <span>Not a product catalogue. All 27 records maintained until source deduplication.</span>
+            <span>Not a product catalogue. Preserving 27 candidate objects pending source verification.</span>
           </div>
         </div>
       </header>
@@ -60,17 +59,6 @@ export function MaterialPage() {
           </button>
           <button
             type="button"
-            onClick={() => setFilter('distinct')}
-            className={`editorial-link px-3 py-1.5 text-xs font-mono tracking-wider transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[#F5F3EF] ${
-              filter === 'distinct'
-                ? 'bg-[#F5F3EF] text-black font-medium'
-                : 'border border-[#F5F3EF]/20 text-[#B8B5B1] hover:text-[#F5F3EF]'
-            }`}
-          >
-            Distinct Candidates (24)
-          </button>
-          <button
-            type="button"
             onClick={() => setFilter('review')}
             className={`editorial-link px-3 py-1.5 text-xs font-mono tracking-wider transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[#F5F3EF] ${
               filter === 'review'
@@ -78,12 +66,12 @@ export function MaterialPage() {
                 : 'border border-[#F5F3EF]/20 text-[#B8B5B1] hover:text-[#F5F3EF]'
             }`}
           >
-            Similarity Review (3)
+            Candidate Review (27)
           </button>
         </div>
 
         <span className="text-[11px] font-mono text-[#B8B5B1]">
-          Source Pages: 2, 5, 9, 11, 13, 15, 16, 18
+          Candidate Source Pages: 2, 5, 9, 11, 13, 15, 16, 18
         </span>
       </div>
 
@@ -126,10 +114,8 @@ export function MaterialPage() {
                 {swatch.textureHint}
               </p>
               <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-[#B8B5B1]/70">
-                <span>{swatch.provisionalPage.replace('Candidate source page ', 'p. ')}</span>
-                {swatch.classification === 'duplicate_suspect' && (
-                  <span className="text-amber-400/80">[Review]</span>
-                )}
+                <span>Mapping pending verification</span>
+                <span className="text-amber-400/80">[Candidate]</span>
               </div>
             </div>
           </button>

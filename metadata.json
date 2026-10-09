@@ -1,6 +1,6 @@
 {
   "name": "MAHOP — Nocturnal Textile Theatre",
-  "description": "Visual and interaction prototype for MAHOP — an image-led artistic portfolio for fashion, textile, photography, collage, illustration, and visual-art work.",
+  "description": "Portfolio of fashion, textile architecture, photography, and visual-art work by Aurelia Mahop Di Toro.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

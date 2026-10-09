@@ -418,7 +418,32 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-    transform: none !important;
+  }
+
+  /* Disable non-essential decorative animations while preserving static positioning transforms */
+  .animate-cutout-drift,
+  .animate-intro-star,
+  .animate-intro-mah,
+  .animate-intro-p,
+  .animate-curtain-left,
+  .animate-curtain-right,
+  .animate-intro-logo-exit,
+  .animate-wordmark-reveal,
+  .animate-rule-draw,
+  .animate-image-reveal,
+  .animate-title-settle,
+  .animate-chapter-title,
+  .animate-chapter-image,
+  .animate-white-interlude,
+  .animate-aurora-transition,
+  .animate-photo-reveal,
+  .animate-modal-open,
+  .animate-modal-close,
+  .animate-mobile-menu-in,
+  .animate-contact-reveal,
+  .animate-page-enter {
+    animation: none !important;
+    transition: none !important;
   }
 }
 

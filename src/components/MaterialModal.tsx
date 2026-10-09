@@ -126,7 +126,7 @@ export function MaterialModal({ swatch, onClose, triggerElement }: MaterialModal
 
           <div className="md:col-span-5 flex flex-col space-y-5 text-xs font-sans">
             <div className="space-y-1">
-              <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Tactile Note</span>
+              <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Specimen Status</span>
               <p id="material-modal-desc" className="text-sm text-[#F5F3EF] font-mono leading-relaxed">
                 {swatch.textureHint}
               </p>
@@ -136,28 +136,24 @@ export function MaterialModal({ swatch, onClose, triggerElement }: MaterialModal
               <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Source Reference</span>
               <p className="font-mono text-xs text-[#F5F3EF]">{swatch.provisionalPage}</p>
               <p className="text-[10px] text-[#B8B5B1]/70 leading-normal">
-                Candidate source pages across collection: 2, 5, 9, 11, 13, 15, 16, 18.
+                Candidate source pages across collection: 2, 5, 9, 11, 13, 15, 16, 18. Individual swatch-to-page assignment pending verification.
               </p>
             </div>
 
             <div className="space-y-1 pt-2 border-t border-[#F5F3EF]/10">
               <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Classification Status</span>
               <p className="font-mono text-xs text-[#F5F3EF]">
-                {swatch.classification === 'distinct' ? (
-                  <span className="text-emerald-400">Distinct object candidate</span>
-                ) : (
-                  <span className="text-amber-300">Under visual similarity review</span>
-                )}
+                <span className="text-amber-300">Provisional Candidate Review</span>
               </p>
               <p className="text-[10px] text-[#B8B5B1]/70 leading-normal">
-                All 27 provisional records maintained to prevent premature omission before source inspection.
+                All 27 provisional records maintained to prevent premature omission before direct source inspection and deduplication.
               </p>
             </div>
 
             <div className="pt-4 border-t border-[#F5F3EF]/15">
               <div className="flex items-center gap-2 text-[11px] text-[#B8B5B1]">
                 <ZoomIn className="w-3.5 h-3.5" />
-                <span>Original aspect ratio preserved: {swatch.aspectRatio}</span>
+                <span>Proposed layout aspect ratio: {swatch.aspectRatio}</span>
               </div>
             </div>
           </div>

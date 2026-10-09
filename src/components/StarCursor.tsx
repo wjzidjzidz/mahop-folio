@@ -15,21 +15,48 @@ import { BrandStar } from './BrandStar';
  */
 export function StarCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
+  const [isEnabled, setIsEnabled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
+  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
-    // Only enable on devices with hover and fine pointer capability (mouse/trackpad)
     if (typeof window === 'undefined') return;
 
-    const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (!hasFinePointer) {
+    const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const checkEligibility = () => {
+      const eligible = finePointerQuery.matches && !reducedMotionQuery.matches;
+      setIsEnabled(eligible);
+      if (!eligible) {
+        document.documentElement.classList.remove('has-custom-cursor');
+        hasInitializedRef.current = false;
+        setIsVisible(false);
+      }
+    };
+
+    checkEligibility();
+
+    const handleMediaChange = () => {
+      checkEligibility();
+    };
+
+    finePointerQuery.addEventListener('change', handleMediaChange);
+    reducedMotionQuery.addEventListener('change', handleMediaChange);
+
+    return () => {
+      finePointerQuery.removeEventListener('change', handleMediaChange);
+      reducedMotionQuery.removeEventListener('change', handleMediaChange);
+      document.documentElement.classList.remove('has-custom-cursor');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isEnabled) {
       return;
     }
-
-    // Inform DOM that custom cursor is active so native cursor is hidden safely
-    document.documentElement.classList.add('has-custom-cursor');
 
     let mouseX = -100;
     let mouseY = -100;
@@ -38,7 +65,10 @@ export function StarCursor() {
       mouseX = e.clientX;
       mouseY = e.clientY;
 
-      if (!isVisible) {
+      if (!hasInitializedRef.current) {
+        hasInitializedRef.current = true;
+        // Only hide native cursor once custom cursor has successfully initialized and tracked
+        document.documentElement.classList.add('has-custom-cursor');
         setIsVisible(true);
       }
 
@@ -69,7 +99,9 @@ export function StarCursor() {
     };
 
     const onMouseEnter = () => {
-      setIsVisible(true);
+      if (hasInitializedRef.current) {
+        setIsVisible(true);
+      }
     };
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
@@ -86,10 +118,10 @@ export function StarCursor() {
       document.removeEventListener('mouseleave', onMouseLeave);
       document.removeEventListener('mouseenter', onMouseEnter);
     };
-  }, [isVisible]);
+  }, [isEnabled]);
 
-  // If not running in a browser with a fine pointer, render nothing
-  if (typeof window === 'undefined') return null;
+  // If not enabled (e.g. reduced motion, touch device, or unsupported), render nothing
+  if (!isEnabled) return null;
 
   return (
     <div
