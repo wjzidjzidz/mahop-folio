@@ -1,0 +1,424 @@
+@import "tailwindcss";
+
+:root {
+  --stage-black: #000000;
+  --interface-white: #F5F3EF;
+  --interface-muted: #B8B5B1;
+  --interface-rule: rgba(245, 243, 239, 0.38);
+  --source-deep-red: #7B0000;
+  --source-aurora-purple: #7C11B8;
+  --source-etoile-red: #6B1111;
+  --source-mercury-1: #7B7373;
+  --source-mercury-2: #908584;
+  --source-uranus-1: #95BFBC;
+  --source-uranus-2: #AED5D2;
+  --source-pluto: #454644;
+  --source-mars-1: #C68D68;
+  --source-mars-2: #E87F3E;
+  --source-cosmic-blue: #136896;
+  --source-mahp-green-1: #345727;
+  --source-mahp-green-2: #485E39;
+  --source-mahp-green-3: #618F65;
+
+  --font-display: 'Anton', 'Impact', 'Arial Black', -apple-system, sans-serif;
+  --font-sans: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--stage-black);
+    color: var(--interface-white);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}
+
+/* =========================================================================
+   MAHOP MOTION SYSTEM (M01 – M19)
+   Philosophy: "Reveal, settle, drift" · "Ink on black paper"
+   ========================================================================= */
+
+/* M01: Wordmark reveal (450ms, ease-out, 12px offset) */
+@keyframes m01WordmarkReveal {
+  0% {
+    opacity: 0.15;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-wordmark-reveal {
+  animation: m01WordmarkReveal 450ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
+}
+
+/* M02: Fine-rule drawing (350ms, ease-out, scaleX(0) -> scaleX(1)) */
+@keyframes m02RuleDraw {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+.animate-rule-draw {
+  transform-origin: left center;
+  animation: m02RuleDraw 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M03: Image-mask reveal (550ms, ease-out) */
+@keyframes m03ImageReveal {
+  0% {
+    opacity: 0.4;
+    transform: scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-image-reveal {
+  animation: m03ImageReveal 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M04: Project-title settling (450ms, offset 14px) */
+@keyframes m04TitleSettle {
+  0% {
+    opacity: 0.25;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-title-settle {
+  animation: m04TitleSettle 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M05: Cut-out gentle drift (Desktop only, 8-12px subtle float) */
+@keyframes m05CutoutDrift {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.008);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+@media (min-width: 768px) {
+  .animate-cutout-drift {
+    animation: m05CutoutDrift 7s ease-in-out infinite;
+  }
+}
+
+/* M06: Chapter-title outline and settle (450ms, offset 10px) */
+@keyframes m06ChapterTitle {
+  0% {
+    opacity: 0.3;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-chapter-title {
+  animation: m06ChapterTitle 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M08: Chapter-image settling (500ms, scale 1.015/0.92 -> 1/1) */
+@keyframes m08ChapterImage {
+  0% {
+    opacity: 0.92;
+    transform: scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-chapter-image {
+  animation: m08ChapterImage 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M10: MAH★P white-interlude reveal (400ms, clean opacity entrance) */
+@keyframes m10WhiteInterlude {
+  0% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.animate-white-interlude {
+  animation: m10WhiteInterlude 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M11: Aurora collage-to-photography transition divider (400ms) */
+@keyframes m11AuroraTransition {
+  0% {
+    transform: scaleX(0);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+.animate-aurora-transition {
+  transform-origin: left center;
+  animation: m11AuroraTransition 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M12: Aurora photography reveal (450ms, offset 8px) */
+@keyframes m12PhotoReveal {
+  0% {
+    opacity: 0.35;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-photo-reveal {
+  animation: m12PhotoReveal 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M14 & M15: Material Modal open & close */
+@keyframes m14ModalOpen {
+  0% {
+    opacity: 0;
+    transform: scale(0.99) translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-modal-open {
+  animation: m14ModalOpen 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes m15ModalClose {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.99) translateY(4px);
+  }
+}
+.animate-modal-close {
+  animation: m15ModalClose 140ms ease-in both;
+}
+
+/* M16: Editorial Link Underline Drawing (160ms ease-out) */
+.editorial-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.editorial-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--interface-white);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.editorial-link:hover::after,
+.editorial-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* M17: Mobile menu entry (200ms ease-out, 8px translation) */
+@keyframes m17MobileMenuIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-mobile-menu-in {
+  animation: m17MobileMenuIn 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M18: Contact section reveal (350ms, ease-out) */
+@keyframes m18ContactReveal {
+  0% {
+    opacity: 0.3;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-contact-reveal {
+  animation: m18ContactReveal 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* M19: Route/page transition (180ms subtle opacity and settle) */
+@keyframes m19PageEnter {
+  0% {
+    opacity: 0.82;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-page-enter {
+  animation: m19PageEnter 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* =========================================================================
+   MAH★P SIGNATURE INTRO LOADER ANIMATIONS
+   Phases:
+   A: Star rotates in isolation (0–550ms)
+   B: Letters MAH & P arrive from left & right (450–1000ms)
+   C: Unified logo settles (1000–1250ms)
+   D: Theatrical curtain reveal (1250–1800ms)
+   ========================================================================= */
+
+@keyframes introStarRotate {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(360deg) scale(1);
+  }
+}
+.animate-intro-star {
+  animation: introStarRotate 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes introMahSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-35px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-intro-mah {
+  animation: introMahSlide 420ms cubic-bezier(0.16, 1, 0.3, 1) 480ms both;
+}
+
+@keyframes introPSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(35px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-intro-p {
+  animation: introPSlide 420ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
+}
+
+@keyframes introCurtainLeft {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+.animate-curtain-left {
+  animation: introCurtainLeft 480ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+@keyframes introCurtainRight {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.animate-curtain-right {
+  animation: introCurtainRight 480ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+@keyframes introLogoFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+.animate-intro-logo-exit {
+  animation: introLogoFadeOut 380ms ease-in both;
+}
+
+/* Custom editorial outlines and fine rules */
+.editorial-rule {
+  border-color: var(--interface-rule);
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1px var(--interface-white);
+  color: transparent;
+}
+
+.text-stroke-subtle {
+  -webkit-text-stroke: 1px rgba(245, 243, 239, 0.5);
+  color: transparent;
+}
+
+/* Custom Star Cursor styles (desktop fine pointer only) */
+@media (hover: hover) and (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor body,
+  html.has-custom-cursor a,
+  html.has-custom-cursor button,
+  html.has-custom-cursor [role="button"] {
+    cursor: none !important;
+  }
+}
+
+/* Reduced motion preference compliance */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
+}
+

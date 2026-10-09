@@ -1,0 +1,6 @@
+{
+  "name": "MAHOP — Nocturnal Textile Theatre",
+  "description": "Visual and interaction prototype for MAHOP — an image-led artistic portfolio for fashion, textile, photography, collage, illustration, and visual-art work.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
