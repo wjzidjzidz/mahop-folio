@@ -62,16 +62,27 @@ export function Footer() {
               <div className="space-y-1 text-sm font-mono text-[#F5F3EF]">
                 <p className="flex items-center justify-between py-1 border-b border-[#F5F3EF]/10">
                   <span className="text-xs text-[#B8B5B1]">Instagram</span>
-                  <span>{CONTACT_INFO.instagramHandle}</span>
+                  <a
+                    href={CONTACT_INFO.instagramHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="editorial-link focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-2 rounded-sm"
+                  >
+                    {CONTACT_INFO.instagramHandle}
+                  </a>
                 </p>
                 <p className="flex items-center justify-between py-1 border-b border-[#F5F3EF]/10">
                   <span className="text-xs text-[#B8B5B1]">TikTok</span>
-                  <span>{CONTACT_INFO.tiktokHandle}</span>
+                  <a
+                    href={CONTACT_INFO.tiktokHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="editorial-link focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-2 rounded-sm"
+                  >
+                    {CONTACT_INFO.tiktokHandle}
+                  </a>
                 </p>
               </div>
-              <p className="text-[10px] text-[#B8B5B1]/70 mt-2 italic leading-tight">
-                * Note: Exact URLs unverified in handover; handles preserved as text.
-              </p>
             </div>
           </div>
         </div>

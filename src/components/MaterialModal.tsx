@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { MaterialSwatch } from '../data/content';
-import { StructuralPlaceholder } from './StructuralPlaceholder';
+import type { MaterialSwatch } from '../data/content';
+import { PortfolioImage } from './PortfolioImage';
 import { X, ZoomIn } from 'lucide-react';
 
 interface MaterialModalProps {
@@ -75,7 +75,7 @@ export function MaterialModal({ swatch, onClose, triggerElement }: MaterialModal
     }
   };
 
-  if (!swatch) return null;
+  if (!swatch?.image) return null;
 
   return (
     <dialog
@@ -114,46 +114,39 @@ export function MaterialModal({ swatch, onClose, triggerElement }: MaterialModal
         {/* Modal Body / Enlarged Visual */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
           <div className="md:col-span-7">
-            <StructuralPlaceholder
-              id={swatch.id}
-              title={swatch.label}
-              sourceRef={swatch.provisionalPage}
-              aspectRatio={swatch.aspectRatio}
-              variant="swatch"
-              className="w-full max-h-[60vh] object-contain border-[#F5F3EF]/30"
-            />
+            <div
+              className="flex min-h-64 items-center justify-center bg-white/[0.015] p-4"
+              style={{ aspectRatio: swatch.aspectRatio }}
+            >
+              <PortfolioImage
+                asset={swatch.image}
+                className="max-h-[60vh] w-auto max-w-full object-contain"
+                style={{ maxWidth: `min(100%, ${swatch.image.width * 2 / 3}px)` }}
+                eager
+              />
+            </div>
           </div>
 
           <div className="md:col-span-5 flex flex-col space-y-5 text-xs font-sans">
             <div className="space-y-1">
-              <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Specimen Status</span>
+              <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Source reference</span>
               <p id="material-modal-desc" className="text-sm text-[#F5F3EF] font-mono leading-relaxed">
-                {swatch.textureHint}
+                {swatch.provisionalPage}
+              </p>
+              <p className="text-[10px] text-[#B8B5B1]/70 leading-normal">
+                Provisional image mapping. No fibre content, material classification or publication permission is asserted.
               </p>
             </div>
 
             <div className="space-y-1 pt-2 border-t border-[#F5F3EF]/10">
-              <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Source Reference</span>
-              <p className="font-mono text-xs text-[#F5F3EF]">{swatch.provisionalPage}</p>
-              <p className="text-[10px] text-[#B8B5B1]/70 leading-normal">
-                Candidate source pages across collection: 2, 5, 9, 11, 13, 15, 16, 18. Individual swatch-to-page assignment pending verification.
-              </p>
-            </div>
-
-            <div className="space-y-1 pt-2 border-t border-[#F5F3EF]/10">
-              <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Classification Status</span>
-              <p className="font-mono text-xs text-[#F5F3EF]">
-                <span className="text-amber-300">Provisional Candidate Review</span>
-              </p>
-              <p className="text-[10px] text-[#B8B5B1]/70 leading-normal">
-                All 27 provisional records maintained to prevent premature omission before direct source inspection and deduplication.
-              </p>
+              <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Archive status</span>
+              <p className="font-mono text-xs text-[#F5F3EF]">Mapped candidate image · {swatch.id}</p>
             </div>
 
             <div className="pt-4 border-t border-[#F5F3EF]/15">
               <div className="flex items-center gap-2 text-[11px] text-[#B8B5B1]">
                 <ZoomIn className="w-3.5 h-3.5" />
-                <span>Proposed layout aspect ratio: {swatch.aspectRatio}</span>
+                <span>Original image: {swatch.image.width} × {swatch.image.height}px</span>
               </div>
             </div>
           </div>

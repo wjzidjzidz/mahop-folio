@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from '../router/RouterContext';
-import { StructuralPlaceholder } from '../components/StructuralPlaceholder';
+import { PortfolioImage } from '../components/PortfolioImage';
+import { PORTFOLIO_ASSETS } from '../data/portfolioAssets';
 import { PROJECTS } from '../data/content';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
@@ -75,16 +76,47 @@ export function LetoileMahoPage() {
         </div>
       </header>
 
-      {/* Lead Visual Anchor with M03 Image Reveal */}
+      {/* Opening collage, cut-out group and framing illustrations */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <StructuralPlaceholder
-          id={project.leadAssetId}
-          title="L'ETOILE MAHO Opening Stage Visual"
-          sourceRef="Source Pages 6–7 Lead Presentation"
-          aspectRatio="16/9"
-          variant="stage"
-          accentColor="#6B1111"
-        />
+        <div className="relative mx-auto w-full max-w-[900px]" style={{ aspectRatio: `${PORTFOLIO_ASSETS.letoile.intro.plate.width}/${PORTFOLIO_ASSETS.letoile.intro.plate.height}` }}>
+          <PortfolioImage asset={PORTFOLIO_ASSETS.letoile.intro.plate} eager className="absolute inset-0 h-full w-full object-contain" />
+          <PortfolioImage
+            asset={PORTFOLIO_ASSETS.letoile.intro.models}
+            eager
+            className="absolute bottom-0 left-1/2 z-10 h-[88%] w-auto max-w-[64%] -translate-x-1/2 object-contain object-bottom"
+            style={{ maxWidth: `${Math.min(520, PORTFOLIO_ASSETS.letoile.intro.models.width * 2 / 3)}px` }}
+          />
+          {PORTFOLIO_ASSETS.letoile.intro.illustrations.map((asset, index) => (
+            <PortfolioImage
+              key={asset.slot}
+              asset={asset}
+              className={`absolute bottom-0 z-20 hidden h-[82%] w-auto max-w-[25%] object-contain object-bottom min-[600px]:block ${
+                index === 0 ? 'left-0' : 'right-0'
+              }`}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-[#F5F3EF]/15 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 flex items-baseline justify-between gap-4">
+            <h2 className="text-2xl sm:text-3xl font-display uppercase">Photographic Sequence</h2>
+            <span className="text-[10px] font-mono tracking-widest text-[#B8B5B1]">SOURCE PAGE 07</span>
+          </div>
+          <div className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+            {PORTFOLIO_ASSETS.letoile.photographs.map((asset, index) => (
+              <div key={asset.slot} className="w-[78vw] shrink-0 snap-start sm:w-[486px]">
+                <PortfolioImage
+                  asset={asset}
+                  eager={index === 0}
+                  className="block h-auto w-full object-contain"
+                  style={{ maxWidth: `${asset.width * 2 / 3}px` }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* M09: Discreet Chapter Tracker (Desktop/Tablet) */}
@@ -169,15 +201,24 @@ export function LetoileMahoPage() {
               {/* Asymmetric Composition with M08 Chapter Image Settle */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                 <div className={`${isEven ? 'lg:col-span-8' : 'lg:col-span-7 lg:order-2'} animate-chapter-image`}>
-                  <StructuralPlaceholder
-                    id={ch.assetId}
-                    title={`Chapter ${ch.name} Image Composition`}
-                    sourceRef={`Source Pages 8–15 (${ch.name} Group)`}
-                    aspectRatio={index === 1 ? '3/2' : index === 3 ? '1/1' : '4/5'}
-                    variant="chapter"
-                    accentColor={ch.accentHex}
-                    className="w-full"
-                  />
+                  <div
+                    className="relative mx-auto w-full"
+                    style={{
+                      aspectRatio: `${PORTFOLIO_ASSETS.letoile.chapters[index].plate.width}/${PORTFOLIO_ASSETS.letoile.chapters[index].plate.height}`,
+                      maxWidth: `${PORTFOLIO_ASSETS.letoile.chapters[index].plate.width * 2 / 3}px`,
+                    }}
+                  >
+                    <PortfolioImage asset={PORTFOLIO_ASSETS.letoile.chapters[index].plate} className="absolute inset-0 h-full w-full object-contain" />
+                    {PORTFOLIO_ASSETS.letoile.chapters[index].models.slice(0, 2).map((asset, modelIndex) => (
+                      <PortfolioImage
+                        key={asset.slot}
+                        asset={asset}
+                        className={`absolute bottom-0 z-10 h-[84%] w-auto object-contain object-bottom ${
+                          modelIndex === 0 ? 'left-[18%] max-w-[34%]' : 'right-[16%] max-w-[34%]'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 <div
@@ -197,9 +238,27 @@ export function LetoileMahoPage() {
                     </p>
                   </div>
 
-                  <div className="space-y-1 font-mono text-[11px] text-[#B8B5B1]/70">
-                    <p>Asset ID: {ch.assetId}</p>
-                    <p>Stage Palette: {ch.accentHex}</p>
+                  <div className="border-t border-[#F5F3EF]/15 pt-4">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#B8B5B1]">
+                      {ch.name} · textile samples
+                    </span>
+                    <div className="mt-3 flex items-end gap-3">
+                      {PORTFOLIO_ASSETS.letoile.chapters[index].swatches.map((asset) => (
+                        <PortfolioImage
+                          key={asset.slot}
+                          asset={asset}
+                          className="h-24 w-auto max-w-[34%] object-contain"
+                          style={{ maxWidth: `${Math.min(150, asset.width * 2 / 3)}px` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="hidden items-end justify-center border-l border-[#F5F3EF]/15 pl-4 min-[600px]:flex">
+                    <PortfolioImage
+                      asset={PORTFOLIO_ASSETS.letoile.chapters[index].illustration}
+                      className="max-h-56 w-auto max-w-[42%] object-contain"
+                      style={{ maxWidth: `${Math.min(160, PORTFOLIO_ASSETS.letoile.chapters[index].illustration.width * 2 / 3)}px` }}
+                    />
                   </div>
                 </div>
               </div>
@@ -223,6 +282,7 @@ export function LetoileMahoPage() {
             href="/work/mah-star-p"
             className="editorial-link group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#F5F3EF]"
           >
+            <PortfolioImage asset={PORTFOLIO_ASSETS.letoile.next} className="h-8 w-28 object-cover object-center" />
             <span>Next Project: MAH★P</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
