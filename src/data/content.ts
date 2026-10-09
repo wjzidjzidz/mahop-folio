@@ -1,3 +1,6 @@
+import type { PortfolioAsset } from '../components/PortfolioImage';
+import { PORTFOLIO_ASSETS } from './portfolioAssets';
+
 /**
  * MAHOP Master Data & Verified Content Records
  * Conforms strictly to MAHOP_MASTER_BLUEPRINT_v1.md
@@ -40,10 +43,12 @@ export interface ProjectData {
 export interface MaterialSwatch {
   id: string; // e.g. SWATCH-01
   label: string; // e.g. "Material 01"
-  provisionalPage: string; // "Source page mapping pending verification"
+  provisionalPage: string;
   classification: 'candidate_review';
-  aspectRatio: string; // Proposed prototype layout ratio
+  aspectRatio: string;
   textureHint: string;
+  image?: PortfolioAsset;
+  mappingStatus: 'mapped' | 'unresolved';
 }
 
 export const CONTACT_INFO = {
@@ -52,8 +57,9 @@ export const CONTACT_INFO = {
   phone: '+39 375 1295019',
   phoneHref: 'tel:+393751295019',
   instagramHandle: '@callmemahop',
+  instagramHref: 'https://www.instagram.com/callmemahop/',
   tiktokHandle: '@callmemahop',
-  note: 'Social profile URLs are unverified in source handover; handles preserved as text.',
+  tiktokHref: 'https://www.tiktok.com/@callmemahop',
 };
 
 export const PROJECTS: Record<string, ProjectData> = {
@@ -133,20 +139,48 @@ export const PROJECTS: Record<string, ProjectData> = {
   },
 };
 
-// 27 Provisional Material Swatch Inventory (SWATCH-01 to SWATCH-27)
-// Preserves all 27 candidate objects per Master Blueprint Section 6.5.
-// Candidate source pages across collection: 2, 5, 9, 11, 13, 15, 16, 18.
-// Individual page mappings, distinctness, and material properties remain unverified pending direct source inspection.
+const materialSources = [
+  ['p. 9 · Mercury samples', 'Grey knitted sample gathered into a knot'],
+  ['p. 9 · Mercury samples', 'Grey knit sample with silver beads'],
+  ['p. 9 · Mercury samples', 'Grey knit sample with a blue beaded motif'],
+  ['p. 11 · Uranus samples', 'Pale blue lace-like knit sample with open holes'],
+  ['p. 11 · Uranus samples', 'White and blue knit sample with beads'],
+  ['p. 11 · Uranus samples', 'Grey knit sample with a circuit-like pattern'],
+  ['p. 13 · Pluto samples', 'Navy and grey zebra-stripe knit sample'],
+  ['p. 13 · Pluto samples', 'Grey knit sample with a cabled texture'],
+  ['p. 15 · Mars samples', 'Orange chunky knit sample with yellow beads'],
+  ['p. 15 · Mars samples', 'Brown and orange layered knit sample'],
+  ['p. 15 · Mars samples', 'Orange knit sample with a honeycomb texture and brown cord'],
+  ['p. 2 · Other samples', 'Pink and olive patterned knit sample'],
+  ['p. 2 · Other samples', 'Brown and rust textured knit sample'],
+  ['p. 2 · Other samples', 'Dusty pink ribbed knit sample'],
+  ['p. 2 · Other samples', 'Red knit sample with vertical cable-like ribs'],
+  ['p. 5 · Other samples', 'Green knit sample with raised outline motif'],
+  ['p. 5 · Other samples', 'Leopard-pattern knit sample with gold coin-shaped trim'],
+  ['p. 5 · Other samples', 'Red knit sample with looped cord decoration on an orange edge'],
+  ['p. 5 · Other samples', 'Red and cream chevron knit sample'],
+  ['p. 16 · Other samples', 'Yellow and ochre geometric knit sample'],
+  ['p. 16 · Other samples', 'Green knit sample with neon yellow laces'],
+  ['p. 18 · Other samples', 'Brown knit sample with thin yellow and orange zigzag lines'],
+  ['p. 18 · Other samples', 'Cream sculptural knit sample with folded forms'],
+  ['p. 18 · Other samples', 'Brown and cream patterned knit sample'],
+] as const;
+
+// Preserve the existing 27 provisional records. The supplied placement map
+// maps 24 visible assets, holds two candidates, and does not reconcile one record.
 export const MATERIAL_SWATCHES: MaterialSwatch[] = Array.from({ length: 27 }, (_, i) => {
   const num = String(i + 1).padStart(2, '0');
+  const source = materialSources[i];
+  const image = PORTFOLIO_ASSETS.material[i];
 
   return {
     id: `SWATCH-${num}`,
     label: `Material ${num}`,
-    provisionalPage: 'Source page mapping pending verification',
+    provisionalPage: source?.[0] ?? 'Placement mapping unresolved',
     classification: 'candidate_review',
-    // Proposed prototype layout aspect ratios (not measured physical swatch dimensions)
-    aspectRatio: i % 3 === 0 ? '4/5' : i % 3 === 1 ? '1/1' : '3/4',
-    textureHint: 'Textile specimen details pending source verification',
+    aspectRatio: image ? `${image.width}/${image.height}` : '1/1',
+    textureHint: source?.[1] ?? 'No source mapping assigned in the supplied placement map',
+    image,
+    mappingStatus: image ? 'mapped' : 'unresolved',
   };
 });

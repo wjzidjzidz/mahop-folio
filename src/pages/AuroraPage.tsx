@@ -1,5 +1,6 @@
 import { Link } from '../router/RouterContext';
-import { StructuralPlaceholder } from '../components/StructuralPlaceholder';
+import { PortfolioImage } from '../components/PortfolioImage';
+import { PORTFOLIO_ASSETS } from '../data/portfolioAssets';
 import { PROJECTS } from '../data/content';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
@@ -70,15 +71,18 @@ export function AuroraPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-8">
-            <StructuralPlaceholder
-              id={project.leadAssetId}
-              title="Aurora Master Collage Composition"
-              sourceRef="Source Page 3 (Collage Sequence)"
-              aspectRatio="4/5"
-              variant="aurora"
-              accentColor="#7C11B8"
-              className="w-full"
-            />
+            <div className="relative mx-auto w-full max-w-[718px]" style={{ aspectRatio: `${PORTFOLIO_ASSETS.aurora.intro.plate.width}/${PORTFOLIO_ASSETS.aurora.intro.plate.height}` }}>
+              <PortfolioImage asset={PORTFOLIO_ASSETS.aurora.intro.plate} eager className="absolute inset-0 h-full w-full object-contain" />
+              <PortfolioImage
+                asset={PORTFOLIO_ASSETS.aurora.intro.fullCutout}
+                eager
+                className="absolute bottom-0 right-[18%] z-10 h-[94%] w-auto max-w-[38%] object-contain object-bottom"
+                style={{ maxWidth: `${PORTFOLIO_ASSETS.aurora.intro.fullCutout.width * 2 / 3}px` }}
+              />
+              <PortfolioImage asset={PORTFOLIO_ASSETS.aurora.intro.halfCutout} className="absolute bottom-[18%] left-[44%] z-20 hidden h-[72%] w-auto max-w-[30%] object-contain object-bottom min-[600px]:block" />
+              <PortfolioImage asset={PORTFOLIO_ASSETS.aurora.intro.illustrations[0]} className="absolute bottom-0 left-[4%] z-30 hidden h-[75%] w-auto max-w-[30%] object-contain object-bottom min-[600px]:block" />
+              <PortfolioImage asset={PORTFOLIO_ASSETS.aurora.intro.illustrations[1]} className="absolute bottom-0 left-[24%] z-20 hidden h-[66%] w-auto max-w-[24%] object-contain object-bottom min-[600px]:block" />
+            </div>
           </div>
 
           <div className="lg:col-span-4 space-y-6 text-xs text-[#B8B5B1]">
@@ -133,14 +137,28 @@ export function AuroraPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-8 animate-photo-reveal">
-            <StructuralPlaceholder
-              id="AURORA-PHOTO-TBD"
-              title="Aurora Editorial Fashion Photography"
-              sourceRef="Source Page 4 (Model: Brazy · Stylist: @Playarabian)"
-              aspectRatio="3/4"
-              variant="stage"
-              className="w-full"
-            />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-12 sm:items-start">
+              <div className="sm:col-span-7">
+                <PortfolioImage
+                  asset={PORTFOLIO_ASSETS.aurora.photographs[0]}
+                  eager
+                  className="block h-auto w-full max-w-[480px]"
+                  style={{ maxWidth: `${PORTFOLIO_ASSETS.aurora.photographs[0].width * 2 / 3}px` }}
+                />
+              </div>
+              <div className="grid grid-cols-2 items-start gap-4 sm:col-span-5">
+                {PORTFOLIO_ASSETS.aurora.photographs.slice(1).map((asset, index) => (
+                  <PortfolioImage
+                    key={asset.slot}
+                    asset={asset}
+                    className={`block h-auto w-full object-contain ${
+                      index === 0 ? 'col-span-2 max-w-[384px]' : 'max-w-[288px]'
+                    }`}
+                    style={{ maxWidth: `${asset.width * 2 / 3}px` }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="lg:col-span-4 space-y-4 text-xs font-mono text-[#B8B5B1]">
@@ -152,9 +170,6 @@ export function AuroraPage() {
                 Dress created by Aurelia Mahop Di Toro. Sculptural drape and tension captured in isolated darkness.
               </p>
             </div>
-            <p className="text-[10px] text-[#B8B5B1]/70">
-              Asset ID: AURORA-PHOTO-TBD
-            </p>
           </div>
         </div>
       </section>
@@ -178,6 +193,10 @@ export function AuroraPage() {
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
+        <Link href="/work/letoile-maho" className="mt-10 block w-full overflow-hidden bg-black">
+          <PortfolioImage asset={PORTFOLIO_ASSETS.aurora.next} className="h-24 w-full object-cover object-center sm:h-32" />
+          <span className="sr-only">Next project: L'Etoile MaHo</span>
+        </Link>
       </nav>
     </div>
   );

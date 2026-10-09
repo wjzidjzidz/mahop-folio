@@ -37,17 +37,17 @@ All seven canonical routes specified in the Master Blueprint are defined and nav
 3. `/work/letoile-maho` — Four planetary chapters: **Mercury, Uranus, Pluto, Mars** with sampled palette accents and verified credits from pages 6–7.
 4. `/work/mah-star-p` — The striking white collage interlude (pages 20–21) preserved intact against black negative space; page 22 photography. Exact star title preserved: `MAH★P`.
 5. `/work/aurora-de-liage-x-auro-dapunk` — Exact title and punctuation preserved. Transition from torn-edge collage to editorial studio photography.
-6. `/material` — Material Library displaying **all 27 provisional textile-swatch records** (`SWATCH-01` through `SWATCH-27`) in candidate review status with accessible `<dialog>` inspection modal.
-7. `/about` — Factual portfolio description, direct email (`theycallmemaho@gmail.com`) and phone (`+39 375 1295019`) links, and text handles `@callmemahop`. No invented biography.
+6. `/material` — Material Library displays 24 mapped images in the existing `<dialog>` inspection modal. All 27 provisional records remain in source data: two duplicate candidates are held and one record remains unmatched.
+7. `/about` — Factual portfolio description, direct email (`theycallmemaho@gmail.com`) and phone (`+39 375 1295019`) links, plus links to Instagram and TikTok at `@callmemahop`. No invented biography.
 
 ---
 
-## 3. Asset Conventions & Placeholder Manifest
+## 3. Portfolio Assets
 
-- Placeholder tracking manifest: located at `src/data/prototype-assets.md`.
-- Structural placeholders render architectural coordinates, aspect ratios, grid patterns, silhouette contours, and visible status labels (`PLACEHOLDER — REPLACE WITH VERIFIED MAHOP ASSET`).
-- No authentic credits are attributed to stock imagery.
-- All 27 provisional swatch records (`SWATCH-01` through `SWATCH-27`) are retained as provisional candidates pending direct visual source inspection to confirm distinctness vs duplication.
+- Mapped artwork from the supplied asset set is stored under `public/portfolio-assets/` and used on the Home, Work, L'Etoile MaHo, MAH★P, Aurora, About, and Material routes.
+- Asset paths, intrinsic dimensions, alt text, placement slots, and publication-review flags are centralized in `src/data/portfolioAssets.ts`; rendering uses `src/components/PortfolioImage.tsx`.
+- `src/data/prototype-assets.md` records the integration state, remaining inventory reconciliation, and publication caveats.
+- Source mappings, rights, and model-consent statuses remain unverified for some assets. Confirm clearance before public deployment.
 
 ---
 
@@ -62,9 +62,9 @@ All seven canonical routes specified in the Master Blueprint are defined and nav
 
 ## 5. Technical Status & Handoff Checklist Before Final Release
 
-- **Netlify Route Verification**: `netlify.toml` is present and tested in local production build; live URL verification requires testing on the production Netlify deployment.
+- **Netlify Route Verification**: `netlify.toml` configures the SPA fallback. Live direct-route verification requires testing on the production Netlify deployment.
 - **SEO & Per-Route Static HTML**: Document title and description metadata update dynamically in the client on route change. True per-route static HTML prerendering is not currently implemented and remains an outstanding improvement.
-- **Source Asset Extraction**: The source PDF (`Portfolio_3.pdf`) and high-resolution artwork files must be extracted and placed into the project to replace structural placeholders.
-- **Swatch Classification**: Review the 27 provisional swatch objects against candidate source pages 2, 5, 9, 11, 13, 15, 16, 18 to finalize distinct counts and physical material descriptions.
-- **Social Profile URLs**: Instagram and TikTok handles (`@callmemahop`) are confirmed, but exact URLs require direct verification before enabling hyperlinks.
+- **Asset Publication Clearance**: Confirm rights, model consent, and credit requirements for assets flagged for review before deploying publicly.
+- **Swatch Reconciliation**: All 27 provisional records remain in source; review candidate source pages 2, 5, 9, 11, 13, 15, 16, 18 to resolve two held duplicate candidates and one unmatched record. Do not infer fibre content or physical material properties from images.
+- **Social Profiles**: Instagram and TikTok link to `https://www.instagram.com/callmemahop/` and `https://www.tiktok.com/@callmemahop`.
 - **Font Licensing**: Anton and supporting Space Grotesk/Inter fonts should have their local Open Font License files packaged for production deployment.

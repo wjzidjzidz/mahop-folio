@@ -1,5 +1,6 @@
 import { Link } from '../router/RouterContext';
-import { StructuralPlaceholder } from '../components/StructuralPlaceholder';
+import { PortfolioImage } from '../components/PortfolioImage';
+import { PORTFOLIO_ASSETS } from '../data/portfolioAssets';
 import { PROJECTS } from '../data/content';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
@@ -7,7 +8,6 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 export function MahStarPPage() {
   const project = PROJECTS.mahp;
   const collage1Reveal = useScrollReveal({ threshold: 0.1 });
-  const collage2Reveal = useScrollReveal({ threshold: 0.1 });
   const photoReveal = useScrollReveal({ threshold: 0.1 });
 
   return (
@@ -54,74 +54,30 @@ export function MahStarPPage() {
 
       {/* Breathing Space Before The White Interlude */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <p className="text-xs sm:text-sm font-mono text-[#B8B5B1] max-w-xl">
-          The stage shifts intentionally from darkness to white paper. Flattened collage compositions are displayed intact without artificial 3D layer extraction.
-        </p>
+        <div className="flex items-center justify-between gap-6">
+          <p className="text-xs sm:text-sm font-mono text-[#B8B5B1] max-w-xl">
+            The stage shifts intentionally from darkness to white paper. Flattened collage compositions remain intact.
+          </p>
+          <PortfolioImage asset={PORTFOLIO_ASSETS.mahp.logo} className="h-auto w-[110px] shrink-0 object-contain" />
+        </div>
       </div>
 
-      {/* WHITE COLLAGE COMPOSITION 1 (Source Page 20) with M10 Reveal */}
+      {/* WHITE COLLAGE INTERLUDE · FLATTENED PAGES 20–21 */}
       <section
         ref={collage1Reveal.ref}
-        className={`w-full bg-[#FAF9F5] text-black py-16 sm:py-24 my-12 border-y border-[#E2DFD8] transition-opacity duration-500 ${
+        className={`w-full bg-[#FAF9F5] text-black transition-opacity duration-500 ${
           collage1Reveal.isVisible ? 'opacity-100' : 'opacity-85'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 border-b border-black/15 pb-4">
-            <div>
-              <span className="text-[10px] font-mono tracking-widest uppercase text-black/60 block">
-                COMPOSITION 01 · SOURCE PAGE 20
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-display uppercase tracking-tight text-black">
-                White Collage Field 01
-              </h2>
-            </div>
-            <span className="text-xs font-mono text-black/60">[MAHP-COLLAGE-01]</span>
+        <div className="mx-auto max-w-[1400px]">
+          <div className="px-4 py-5 sm:px-8">
+            <span className="text-[10px] font-mono tracking-widest uppercase text-black/60">
+              WHITE INTERLUDE · SOURCE PAGES 20–21
+            </span>
           </div>
-
-          <div className="p-2 sm:p-6 bg-white border border-black/10 shadow-sm animate-white-interlude">
-            <StructuralPlaceholder
-              id="MAHP-COLLAGE-01"
-              title="MAH★P Master White Collage 01"
-              sourceRef="Source Page 20 (Preserved Intact on White Ground)"
-              aspectRatio="4/3"
-              variant="white-collage"
-              className="w-full"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* WHITE COLLAGE COMPOSITION 2 (Source Page 21) with M10 Reveal */}
-      <section
-        ref={collage2Reveal.ref}
-        className={`w-full bg-[#FAF9F5] text-black py-16 sm:py-24 my-12 border-y border-[#E2DFD8] transition-opacity duration-500 ${
-          collage2Reveal.isVisible ? 'opacity-100' : 'opacity-85'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 border-b border-black/15 pb-4">
-            <div>
-              <span className="text-[10px] font-mono tracking-widest uppercase text-black/60 block">
-                COMPOSITION 02 · SOURCE PAGE 21
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-display uppercase tracking-tight text-black">
-                White Collage Field 02
-              </h2>
-            </div>
-            <span className="text-xs font-mono text-black/60">[MAHP-COLLAGE-02]</span>
-          </div>
-
-          <div className="p-2 sm:p-6 bg-white border border-black/10 shadow-sm animate-white-interlude">
-            <StructuralPlaceholder
-              id="MAHP-COLLAGE-02"
-              title="MAH★P Master White Collage 02"
-              sourceRef="Source Page 21 (Preserved Intact on White Ground)"
-              aspectRatio="3/2"
-              variant="white-collage"
-              className="w-full"
-            />
-          </div>
+          {PORTFOLIO_ASSETS.mahp.interlude.map((asset) => (
+            <PortfolioImage key={asset.slot} asset={asset} className="block h-auto w-full bg-[#FAF9F5]" />
+          ))}
         </div>
       </section>
 
@@ -150,14 +106,15 @@ export function MahStarPPage() {
           </div>
 
           <div className="lg:col-span-7 animate-photo-reveal">
-            <StructuralPlaceholder
-              id="MAHP-PHOTO-TBD"
-              title="Editorial Photography Frame"
-              sourceRef="Source Page 22 Photography Sequence"
-              aspectRatio="3/4"
-              variant="stage"
-              className="w-full"
-            />
+            <div className="mx-auto w-full max-w-[1440px]">
+              <div className="aspect-[4/5] max-h-[85svh] w-full sm:aspect-[3/2]">
+                <PortfolioImage asset={PORTFOLIO_ASSETS.mahp.hero} eager className="h-full w-full object-cover object-[50%_72%] sm:object-contain" />
+              </div>
+              <PortfolioImage
+                asset={PORTFOLIO_ASSETS.mahp.seated}
+                className="ml-auto mt-8 block h-auto w-full max-w-[533px] border border-[#F5F3EF]/15"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -177,6 +134,7 @@ export function MahStarPPage() {
             href="/work/aurora-de-liage-x-auro-dapunk"
             className="editorial-link group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#F5F3EF]"
           >
+            <PortfolioImage asset={PORTFOLIO_ASSETS.mahp.next} className="h-8 w-28 object-cover" />
             <span>Next: AURORA DE LIAGE X AURO DA'PUNK</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>

@@ -1,5 +1,6 @@
 import { CONTACT_INFO } from '../data/content';
-import { StructuralPlaceholder } from '../components/StructuralPlaceholder';
+import { PortfolioImage } from '../components/PortfolioImage';
+import { PORTFOLIO_ASSETS } from '../data/portfolioAssets';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Mail, Phone, Instagram } from 'lucide-react';
 
@@ -42,14 +43,19 @@ export function AboutPage() {
         </div>
 
         <div className="lg:col-span-5">
-          <StructuralPlaceholder
-            id="PORTFOLIO-IDENTITY-TBD"
-            title="Artist Studio & Portfolio Identity"
-            sourceRef="Source Portfolio Document Archive"
-            aspectRatio="4/5"
-            variant="stage"
-            className="w-full"
-          />
+          <div className="relative mx-auto flex min-h-[500px] max-w-[487px] items-end justify-center overflow-hidden">
+            <PortfolioImage
+              asset={PORTFOLIO_ASSETS.about.primary}
+              className="relative z-10 h-auto max-h-[537px] w-auto max-w-[72%] object-contain object-bottom"
+            />
+            <PortfolioImage
+              asset={PORTFOLIO_ASSETS.about.supporting}
+              className="absolute bottom-0 left-0 z-20 hidden h-auto max-h-[400px] w-auto max-w-[42%] object-contain object-bottom min-[600px]:block"
+            />
+          </div>
+          <p className="mt-3 text-[10px] font-mono uppercase tracking-widest text-[#B8B5B1]">
+            Cover illustrations · source page 01
+          </p>
         </div>
       </section>
 
@@ -107,12 +113,29 @@ export function AboutPage() {
               <span className="uppercase tracking-widest">Social Accounts</span>
             </div>
             <div className="space-y-1 font-mono text-sm text-[#F5F3EF]">
-              <p>Instagram: {CONTACT_INFO.instagramHandle}</p>
-              <p>TikTok: {CONTACT_INFO.tiktokHandle}</p>
+              <p>
+                Instagram:{' '}
+                <a
+                  href={CONTACT_INFO.instagramHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="editorial-link focus-visible:outline-2 focus-visible:outline-[#F5F3EF]"
+                >
+                  {CONTACT_INFO.instagramHandle}
+                </a>
+              </p>
+              <p>
+                TikTok:{' '}
+                <a
+                  href={CONTACT_INFO.tiktokHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="editorial-link focus-visible:outline-2 focus-visible:outline-[#F5F3EF]"
+                >
+                  {CONTACT_INFO.tiktokHandle}
+                </a>
+              </p>
             </div>
-            <p className="text-[10px] text-[#B8B5B1]/70 leading-normal italic">
-              * Handles preserved as text; exact profile URLs unverified in source handover.
-            </p>
           </div>
         </div>
       </section>

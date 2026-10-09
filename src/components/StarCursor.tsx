@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { BrandStar } from './BrandStar';
 
 /**
@@ -19,6 +20,9 @@ export function StarCursor() {
   const [isVisible, setIsVisible] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
+  const [cursorHost, setCursorHost] = useState<HTMLElement | null>(null);
+  const cursorHostRef = useRef<HTMLElement | null>(null);
+  const pointerPositionRef = useRef({ x: -100, y: -100 });
   const hasInitializedRef = useRef(false);
 
   useEffect(() => {
@@ -58,12 +62,50 @@ export function StarCursor() {
       return;
     }
 
-    let mouseX = -100;
-    let mouseY = -100;
+    const syncCursorHost = () => {
+      setCursorHost(document.querySelector('dialog[open]'));
+    };
+    const observer = new MutationObserver(syncCursorHost);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['open'],
+      childList: true,
+      subtree: true,
+    });
+    syncCursorHost();
+
+    return () => observer.disconnect();
+  }, [isEnabled]);
+
+  cursorHostRef.current = cursorHost;
+
+  useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
+
+    const positionCursor = () => {
+      const host = cursorHostRef.current;
+      const bounds = host?.getBoundingClientRect();
+      const { x, y } = pointerPositionRef.current;
+      if (cursorRef.current) {
+        cursorRef.current.style.transform = `translate3d(${x - (bounds?.left ?? 0)}px, ${y - (bounds?.top ?? 0)}px, 0)`;
+      }
+    };
+
+    positionCursor();
+    cursorHost?.addEventListener('animationend', positionCursor);
+
+    return () => cursorHost?.removeEventListener('animationend', positionCursor);
+  }, [cursorHost, isEnabled]);
+
+  useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
 
     const onPointerMove = (e: PointerEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
+      pointerPositionRef.current = { x: e.clientX, y: e.clientY };
 
       if (!hasInitializedRef.current) {
         hasInitializedRef.current = true;
@@ -72,8 +114,10 @@ export function StarCursor() {
         setIsVisible(true);
       }
 
+      const host = cursorHostRef.current;
+      const bounds = host?.getBoundingClientRect();
       if (cursorRef.current) {
-        cursorRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+        cursorRef.current.style.transform = `translate3d(${e.clientX - (bounds?.left ?? 0)}px, ${e.clientY - (bounds?.top ?? 0)}px, 0)`;
       }
 
       // Check if hovering over an interactive element via event delegation
@@ -123,7 +167,7 @@ export function StarCursor() {
   // If not enabled (e.g. reduced motion, touch device, or unsupported), render nothing
   if (!isEnabled) return null;
 
-  return (
+  const cursor = (
     <div
       ref={cursorRef}
       aria-hidden="true"
@@ -149,4 +193,6 @@ export function StarCursor() {
       </div>
     </div>
   );
+
+  return cursorHost ? createPortal(cursor, cursorHost) : cursor;
 }

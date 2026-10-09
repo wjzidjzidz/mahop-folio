@@ -1,5 +1,6 @@
 import { Link } from '../router/RouterContext';
-import { StructuralPlaceholder } from '../components/StructuralPlaceholder';
+import { PortfolioImage } from '../components/PortfolioImage';
+import { PORTFOLIO_ASSETS } from '../data/portfolioAssets';
 import { PROJECTS } from '../data/content';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ArrowUpRight } from 'lucide-react';
@@ -34,7 +35,7 @@ export function WorkIndexPage() {
               href="/material"
               className="editorial-link inline-flex items-center gap-1.5 text-[#F5F3EF] uppercase tracking-widest text-[11px]"
             >
-              <span>Explore Material Library (27 Swatches)</span>
+              <span>Explore Material Library (24 mapped samples)</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -89,15 +90,19 @@ export function WorkIndexPage() {
 
           <div className="lg:col-span-7 order-1 lg:order-2">
             <Link href={letoile.slug} className="block group">
-              <StructuralPlaceholder
-                id={letoile.leadAssetId}
-                title="L'ETOILE MAHO Master Stage"
-                sourceRef="Source Pages 6–7"
-                aspectRatio="16/10"
-                variant="stage"
-                accentColor="#6B1111"
-                className="group-hover:border-[#F5F3EF]/40 transition-colors duration-300"
-              />
+              <div className="relative mx-auto w-full max-w-[840px]" style={{ aspectRatio: `${PORTFOLIO_ASSETS.work.etoile.plate.width}/${PORTFOLIO_ASSETS.work.etoile.plate.height}` }}>
+                <PortfolioImage asset={PORTFOLIO_ASSETS.work.etoile.plate} className="absolute inset-0 h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]" />
+                <PortfolioImage
+                  asset={PORTFOLIO_ASSETS.work.etoile.models}
+                  className="absolute bottom-0 left-1/2 z-10 h-[88%] w-auto max-w-[62%] -translate-x-1/2 object-contain object-bottom"
+                  style={{ maxWidth: `${Math.min(520, PORTFOLIO_ASSETS.work.etoile.models.width * 2 / 3)}px` }}
+                />
+                <PortfolioImage
+                  asset={PORTFOLIO_ASSETS.work.etoile.illustration}
+                  className="absolute bottom-0 left-0 z-20 hidden h-[80%] w-auto max-w-[28%] object-contain object-bottom min-[600px]:block"
+                  style={{ maxWidth: `${Math.min(280, PORTFOLIO_ASSETS.work.etoile.illustration.width * 2 / 3)}px` }}
+                />
+              </div>
             </Link>
           </div>
         </div>
@@ -110,57 +115,52 @@ export function WorkIndexPage() {
           entry2Reveal.isVisible ? 'opacity-100' : 'opacity-85'
         }`}
       >
-        <div className="p-6 sm:p-10 md:p-14 bg-white/5 border border-white/10 transition-colors duration-300">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7">
-              <Link href={mahp.slug} className="block group">
-                <StructuralPlaceholder
-                  id={mahp.leadAssetId}
-                  title="MAH★P White Collage Masterpiece"
-                  sourceRef="Source Page 20 (Flattened White Collage)"
-                  aspectRatio="4/3"
-                  variant="white-collage"
-                  className="group-hover:shadow-2xl transition-shadow duration-300"
-                />
-              </Link>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center transition-colors duration-300">
+          <div className="lg:col-span-7">
+            <Link href={mahp.slug} className="block group bg-white">
+              <PortfolioImage asset={PORTFOLIO_ASSETS.work.mahp.composite} className="block h-auto w-full max-w-[1400px] transition-opacity group-hover:opacity-95" />
+            </Link>
+          </div>
+
+          <div className="lg:col-span-5 space-y-6">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono text-[#B8B5B1]">02 / 03</span>
+              <span className="text-[11px] tracking-[0.25em] uppercase text-[#B8B5B1]">
+                · {mahp.sourcePages}
+              </span>
             </div>
 
-            <div className="lg:col-span-5 space-y-6">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono text-[#B8B5B1]">02 / 03</span>
-                <span className="text-[11px] tracking-[0.25em] uppercase text-[#B8B5B1]">
-                  · {mahp.sourcePages}
-                </span>
-              </div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display uppercase tracking-tight text-[#F5F3EF]">
+              <Link
+                href={mahp.slug}
+                className="hover:text-white/80 focus-visible:outline-2 focus-visible:outline-[#F5F3EF] rounded-sm transition-colors"
+              >
+                {mahp.displayTitle}
+              </Link>
+            </h2>
 
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display uppercase tracking-tight text-[#F5F3EF]">
-                <Link
-                  href={mahp.slug}
-                  className="hover:text-white/80 focus-visible:outline-2 focus-visible:outline-[#F5F3EF] rounded-sm transition-colors"
-                >
-                  {mahp.displayTitle}
-                </Link>
-              </h2>
+            <p className="text-xs sm:text-sm text-[#B8B5B1] leading-relaxed">
+              A deliberate white interlude disrupting the nocturnal stage. Two large flattened collage compositions followed by sharp editorial photography.
+            </p>
 
-              <p className="text-xs sm:text-sm text-[#B8B5B1] leading-relaxed">
-                A deliberate white interlude disrupting the nocturnal stage. Two large flattened collage compositions followed by sharp editorial photography.
-              </p>
+            <div className="pt-2 flex flex-col space-y-1 text-xs font-mono text-[#B8B5B1]/80">
+              <p>Photographer: Avi Bellaiche</p>
+              <p>Model: BAAN</p>
+              <p className="text-[10px] text-[#B8B5B1]/60 italic">* Garment maker uncredited in source</p>
+            </div>
+            <PortfolioImage
+              asset={PORTFOLIO_ASSETS.work.mahp.photo}
+              className="block h-auto w-full max-w-[720px] border border-[#F5F3EF]/10"
+            />
 
-              <div className="pt-2 flex flex-col space-y-1 text-xs font-mono text-[#B8B5B1]/80">
-                <p>Photographer: Avi Bellaiche</p>
-                <p>Model: BAAN</p>
-                <p className="text-[10px] text-[#B8B5B1]/60 italic">* Garment maker uncredited in source</p>
-              </div>
-
-              <div className="pt-4">
-                <Link
-                  href={mahp.slug}
-                  className="editorial-link inline-flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-[#F5F3EF]"
-                >
-                  <span>VIEW MAH★P COMPOSITIONS</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+            <div className="pt-4">
+              <Link
+                href={mahp.slug}
+                className="editorial-link inline-flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-[#F5F3EF]"
+              >
+                <span>VIEW MAH★P COMPOSITIONS</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </div>
@@ -215,15 +215,15 @@ export function WorkIndexPage() {
 
           <div className="lg:col-span-7">
             <Link href={aurora.slug} className="block group">
-              <StructuralPlaceholder
-                id={aurora.leadAssetId}
-                title="AURORA Collage Sequence Lead"
-                sourceRef="Source Page 3"
-                aspectRatio="4/5"
-                variant="aurora"
-                accentColor="#7C11B8"
-                className="group-hover:border-[#7C11B8] transition-colors duration-300"
-              />
+              <div className="relative mx-auto w-full max-w-[700px]" style={{ aspectRatio: `${PORTFOLIO_ASSETS.work.aurora.plate.width}/${PORTFOLIO_ASSETS.work.aurora.plate.height}` }}>
+                <PortfolioImage asset={PORTFOLIO_ASSETS.work.aurora.plate} className="absolute inset-0 h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]" />
+                <PortfolioImage
+                  asset={PORTFOLIO_ASSETS.work.aurora.model}
+                  className="absolute bottom-0 right-[12%] z-10 h-[92%] w-auto max-w-[38%] object-contain object-bottom"
+                  style={{ maxWidth: `${PORTFOLIO_ASSETS.work.aurora.model.width * 2 / 3}px` }}
+                />
+                <PortfolioImage asset={PORTFOLIO_ASSETS.work.aurora.illustration} className="absolute bottom-0 left-[8%] z-20 hidden h-[78%] w-auto max-w-[28%] object-contain object-bottom min-[600px]:block" />
+              </div>
             </Link>
           </div>
         </div>

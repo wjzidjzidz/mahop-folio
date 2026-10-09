@@ -1,14 +1,15 @@
 import { Link } from '../router/RouterContext';
 import { BrandLogo } from '../components/BrandLogo';
-import { StructuralPlaceholder } from '../components/StructuralPlaceholder';
-import { MATERIAL_SWATCHES, PROJECTS } from '../data/content';
+import { PROJECTS } from '../data/content';
+import { PortfolioImage } from '../components/PortfolioImage';
+import { PORTFOLIO_ASSETS } from '../data/portfolioAssets';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ArrowUpRight } from 'lucide-react';
 
 export function HomePage() {
   const letoile = PROJECTS.letoile;
   const mahp = PROJECTS.mahp;
-  const previewSwatches = MATERIAL_SWATCHES.slice(0, 4);
+  const previewSwatches = PORTFOLIO_ASSETS.home.materials;
 
   const castReveal = useScrollReveal({ threshold: 0.1 });
   const letoileReveal = useScrollReveal({ threshold: 0.1 });
@@ -16,7 +17,7 @@ export function HomePage() {
   const materialReveal = useScrollReveal({ threshold: 0.1 });
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full overflow-x-clip">
       {/* SECTION 1: Opening Stage / Wordmark */}
       <section className="relative min-h-[85vh] sm:min-h-[90vh] flex flex-col justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-12 pb-16">
         {/* Top Kicker / Stage Setting with M02 Rule Draw */}
@@ -57,31 +58,16 @@ export function HomePage() {
           </div>
         </div>
 
-        {/* Hero Partner Slot with M03 Image Reveal */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end border-t border-[#F5F3EF]/15 pt-8 animate-rule-draw">
-          <div className="md:col-span-8">
-            <StructuralPlaceholder
-              id="HOME-HERO-TBD"
-              title="Opening Stage Lead Visual"
-              sourceRef="Cover / Lead Composition Reference"
-              aspectRatio="16/9"
-              variant="stage"
-              className="max-h-[500px]"
-            />
-          </div>
-          <div className="md:col-span-4 flex flex-col justify-end space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-t border-[#F5F3EF]/15 pt-6 animate-rule-draw">
+          <div className="space-y-2">
             <span className="text-[10px] tracking-[0.25em] text-[#B8B5B1] uppercase block">
-              Curatorial Observation
+              STAGE 02 · CAST & SILHOUETTES
             </span>
-            <p className="text-xs text-[#B8B5B1] leading-relaxed">
-              Black is the principal stage. Form and silhouette emerge through deliberate negative space rather than commercial presentation.
+            <p className="text-xs sm:text-sm text-[#B8B5B1] leading-relaxed max-w-xl">
+              Fashion illustrations and textile studies enter the black stage as a deliberate cast, held in their original proportions.
             </p>
-            <div className="pt-2">
-              <span className="text-[10px] font-mono text-[#F5F3EF]/60 block">
-                [PROVISIONAL ASSET: HOME-HERO-TBD]
-              </span>
-            </div>
           </div>
+          <span className="text-[10px] font-mono text-[#B8B5B1] tracking-widest">COVER · SOURCE PAGE 01</span>
         </div>
       </section>
 
@@ -106,37 +92,42 @@ export function HomePage() {
           </p>
         </div>
 
-        {/* Asymmetric Cut-out Composition */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          <div className="md:col-span-7">
-            <StructuralPlaceholder
-              id="HOME-CAST-TBD"
-              title="Layered Silhouette Cut-outs"
-              sourceRef="Source Page Figure Reconstructions (Alpha Channel)"
-              aspectRatio="4/5"
-              variant="cast"
-              className="max-h-[550px]"
+        <div className="relative mx-auto flex min-h-[54svh] max-w-6xl items-end justify-center overflow-hidden sm:min-h-[68svh]">
+          <div className="pointer-events-none absolute bottom-0 left-0 z-0 flex items-end">
+            <PortfolioImage
+              asset={PORTFOLIO_ASSETS.home.textiles[0]}
+              className="w-[94px] object-contain sm:w-[180px] lg:w-[240px]"
+              style={{ maxWidth: `${Math.min(340, PORTFOLIO_ASSETS.home.textiles[0].width * 2 / 3)}px` }}
+              aria-hidden="true"
+            />
+            <PortfolioImage
+              asset={PORTFOLIO_ASSETS.home.textiles[1]}
+              className="-ml-8 w-[100px] object-contain sm:-ml-14 sm:w-[190px] lg:w-[260px]"
+              style={{ maxWidth: `${Math.min(400, PORTFOLIO_ASSETS.home.textiles[1].width * 2 / 3)}px` }}
+              aria-hidden="true"
             />
           </div>
-          <div className="md:col-span-5 space-y-8 pl-0 md:pl-6">
-            <div className="border-l border-[#F5F3EF]/20 pl-6 space-y-3">
-              <span className="text-[10px] font-mono tracking-widest text-[#B8B5B1] uppercase block">
-                Preservation Standard
-              </span>
-              <p className="text-sm text-[#F5F3EF] leading-relaxed">
-                Authentic contours remain uncropped. Garments, textile edges, and anatomical gestures are displayed without synthetic background extraction.
-              </p>
-            </div>
-            <div className="border-l border-[#F5F3EF]/20 pl-6 space-y-3">
-              <span className="text-[10px] font-mono tracking-widest text-[#B8B5B1] uppercase block">
-                Motion Protocol
-              </span>
-              <p className="text-xs text-[#B8B5B1] leading-relaxed">
-                Reveal, settle, drift. Low-amplitude drift on desktop with zero scroll-jacking.
-              </p>
-            </div>
+          <div className="relative z-10 flex h-full w-full items-end justify-center">
+            {PORTFOLIO_ASSETS.home.cast.map((asset, index) => {
+              const sizes = ['50svh', '60svh', '64svh', '72svh'];
+              const widths = ['24%', '28%', '31%', '35%'];
+              return (
+                <PortfolioImage
+                  key={asset.slot}
+                  asset={asset}
+                  eager
+                  className={`${index ? '-ml-[8%] sm:-ml-[5%]' : ''} h-auto w-auto max-w-[31%] object-contain object-bottom sm:max-w-[29%] ${
+                    index === 0 ? 'z-10' : index === 1 ? 'z-20' : index === 2 ? 'z-30' : 'z-40'
+                  }`}
+                  style={{ maxHeight: sizes[index], maxWidth: widths[index] }}
+                />
+              );
+            })}
           </div>
         </div>
+        <p className="mt-5 text-[10px] font-mono uppercase tracking-widest text-[#B8B5B1]">
+          Four cover illustrations · transparency preserved · no figure identified as the artist
+        </p>
       </section>
 
       {/* SECTION 3: Featured L'ETOILE MAHO */}
@@ -182,16 +173,24 @@ export function HomePage() {
           </div>
 
           <div className="lg:col-span-7">
-            <Link href={letoile.slug} className="block group">
-              <StructuralPlaceholder
-                id={letoile.leadAssetId}
-                title="L'ETOILE MAHO Opening Composition"
-                sourceRef="Source Pages 6–7"
-                aspectRatio="16/10"
-                variant="stage"
-                accentColor="#6B1111"
-                className="group-hover:border-[#F5F3EF]/40 transition-colors duration-300"
-              />
+            <Link href={letoile.slug} className="group block">
+              <div className="relative mx-auto w-full max-w-[780px]" style={{ aspectRatio: `${PORTFOLIO_ASSETS.home.etoile.plate.width}/${PORTFOLIO_ASSETS.home.etoile.plate.height}` }}>
+                <PortfolioImage asset={PORTFOLIO_ASSETS.home.etoile.plate} className="absolute inset-0 h-full w-full object-contain" />
+                <PortfolioImage
+                  asset={PORTFOLIO_ASSETS.home.etoile.models}
+                  className="absolute bottom-0 left-1/2 z-10 h-[88%] w-auto max-w-[68%] -translate-x-1/2 object-contain object-bottom"
+                  style={{ maxWidth: `${Math.min(520, PORTFOLIO_ASSETS.home.etoile.models.width * 2 / 3)}px` }}
+                />
+                {PORTFOLIO_ASSETS.home.etoile.illustrations.map((asset, index) => (
+                  <PortfolioImage
+                    key={asset.slot}
+                    asset={asset}
+                    className={`absolute bottom-0 z-20 hidden h-[80%] w-auto max-w-[26%] object-contain object-bottom min-[600px]:block ${
+                      index === 0 ? 'left-0' : 'right-0'
+                    }`}
+                  />
+                ))}
+              </div>
             </Link>
           </div>
         </div>
@@ -219,19 +218,12 @@ export function HomePage() {
         </div>
 
         {/* White Stage Container */}
-        <div className="p-4 sm:p-8 md:p-12 bg-white/5 border border-white/10 transition-colors duration-300">
+        <div className="overflow-hidden bg-white transition-colors duration-300">
           <Link href={mahp.slug} className="block group">
-            <StructuralPlaceholder
-              id={mahp.leadAssetId}
-              title="MAH★P White Collage Composition"
-              sourceRef="Source Page 20 (Flattened White Composition)"
-              aspectRatio="16/9"
-              variant="white-collage"
-              className="group-hover:shadow-lg transition-shadow duration-300"
-            />
+            <PortfolioImage asset={PORTFOLIO_ASSETS.home.mahp} className="block h-auto w-full max-w-[1400px] mx-auto" />
           </Link>
-          <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#F5F3EF]/15 text-xs text-[#B8B5B1]">
-            <span className="font-mono text-[11px]">Source pages 20–21 flattened collages · Avi Bellaiche & BAAN</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-black px-4 py-4 text-xs text-[#B8B5B1]">
+            <span className="font-mono text-[11px]">Flattened compositions · source pages 20–21 · p.22 photography credits on project page</span>
             <Link
               href={mahp.slug}
               className="editorial-link inline-flex items-center gap-1.5 text-[#F5F3EF] uppercase tracking-widest text-[11px] font-mono"
@@ -253,7 +245,7 @@ export function HomePage() {
         <div className="mb-12 flex flex-col sm:flex-row sm:items-baseline justify-between gap-4">
           <div>
             <span className="text-[10px] tracking-[0.3em] uppercase text-[#B8B5B1] block mb-2">
-              TEXTURE ARCHITECTURE · 27 PROVISIONAL SWATCHES
+              TEXTILE ARCHIVE · 8 SELECTED SAMPLES
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-display uppercase tracking-tight">
               Material Library Preview
@@ -263,31 +255,20 @@ export function HomePage() {
             href="/material"
             className="editorial-link group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#F5F3EF]"
           >
-            <span>Explore All 27 Swatches</span>
+            <span>Explore 24 Mapped Samples</span>
             <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
           </Link>
         </div>
 
-        {/* 4 Swatch Object Cluster with M13 Swatch Feedback */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-5 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
           {previewSwatches.map((item) => (
-            <Link
-              key={item.id}
-              href="/material"
-              className="group block space-y-3 p-3 bg-white/[0.02] border border-[#F5F3EF]/10 hover:border-[#F5F3EF]/40 hover:scale-[1.02] transition-all duration-200"
-            >
-              <StructuralPlaceholder
-                id={item.id}
-                title={item.label}
-                sourceRef={item.provisionalPage}
-                aspectRatio="1/1"
-                variant="swatch"
-                showStatusBadge={false}
+            <Link key={item.slot} href="/material" className="group flex w-[55vw] shrink-0 snap-start flex-col items-center justify-end gap-3 border-b border-[#F5F3EF]/10 pb-4 sm:w-[340px]">
+              <PortfolioImage
+                asset={item}
+                className="h-[210px] w-auto max-w-full object-contain transition-transform duration-200 group-hover:-translate-y-1"
+                style={{ maxWidth: `min(100%, ${Math.min(340, item.width * 2 / 3)}px)` }}
               />
-              <div className="flex items-center justify-between text-[11px] font-mono text-[#B8B5B1]">
-                <span className="text-[#F5F3EF]">{item.label}</span>
-                <span>{item.id}</span>
-              </div>
+              <span className="sr-only">Explore the Material Library</span>
             </Link>
           ))}
         </div>
