@@ -82,15 +82,15 @@ export function MaterialModal({ swatch, onClose, triggerElement }: MaterialModal
       ref={dialogRef}
       onCancel={handleCancel}
       onClick={handleBackdropClick}
-      className={`fixed inset-0 z-50 m-auto p-0 bg-transparent backdrop:bg-black/85 backdrop:backdrop-blur-sm max-w-4xl w-[92vw] overflow-visible rounded-none border border-[#F5F3EF]/20 text-[#F5F3EF] ${
+      className={`fixed inset-0 z-50 m-auto p-0 bg-transparent backdrop:bg-black/85 backdrop:backdrop-blur-sm w-[92vw] max-w-4xl h-[620px] max-h-[90dvh] overflow-hidden rounded-none border border-[#F5F3EF]/20 text-[#F5F3EF] ${
         isClosing ? 'animate-modal-close' : 'animate-modal-open'
       }`}
       aria-labelledby="material-modal-title"
       aria-describedby="material-modal-desc"
     >
-      <div className="bg-[#0A0A0A] p-6 sm:p-8 md:p-10 flex flex-col space-y-6">
+      <div className="bg-[#0A0A0A] h-full p-6 sm:p-8 md:p-8 lg:p-10 flex flex-col justify-between overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-start justify-between border-b border-[#F5F3EF]/15 pb-4">
+        <div className="flex items-start justify-between border-b border-[#F5F3EF]/15 pb-4 shrink-0">
           <div>
             <span className="text-[10px] tracking-[0.25em] text-[#B8B5B1] uppercase block mb-1">
               Material Library · Inspection
@@ -112,22 +112,18 @@ export function MaterialModal({ swatch, onClose, triggerElement }: MaterialModal
         </div>
 
         {/* Modal Body / Enlarged Visual */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-          <div className="md:col-span-7">
-            <div
-              className="flex min-h-64 items-center justify-center bg-white/[0.015] p-4"
-              style={{ aspectRatio: swatch.aspectRatio }}
-            >
+        <div className="flex-1 min-h-0 grid grid-cols-1 grid-rows-[auto_1fr] md:grid-rows-none md:grid-cols-12 gap-4 sm:gap-6 md:gap-8 md:items-center my-2 sm:my-3">
+          <div className="md:col-span-7 h-48 sm:h-56 md:h-full md:self-stretch min-h-0 min-w-0 flex items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center bg-white/[0.015] p-3 sm:p-4 overflow-hidden">
               <PortfolioImage
                 asset={swatch.image}
-                className="max-h-[60vh] w-auto max-w-full object-contain"
-                style={{ maxWidth: `min(100%, ${swatch.image.width * 2 / 3}px)` }}
+                className="max-h-full max-w-full w-auto h-auto object-contain"
                 eager
               />
             </div>
           </div>
 
-          <div className="md:col-span-5 flex flex-col space-y-5 text-xs font-sans">
+          <div className="md:col-span-5 flex flex-col justify-center space-y-4 sm:space-y-5 text-xs font-sans min-h-0 overflow-y-auto pr-1">
             <div className="space-y-1">
               <span className="text-[10px] uppercase tracking-widest text-[#B8B5B1]">Source reference</span>
               <p id="material-modal-desc" className="text-sm text-[#F5F3EF] font-mono leading-relaxed">
@@ -145,7 +141,7 @@ export function MaterialModal({ swatch, onClose, triggerElement }: MaterialModal
 
             <div className="pt-4 border-t border-[#F5F3EF]/15">
               <div className="flex items-center gap-2 text-[11px] text-[#B8B5B1]">
-                <ZoomIn className="w-3.5 h-3.5" />
+                <ZoomIn className="w-3.5 h-3.5 shrink-0" />
                 <span>Original image: {swatch.image.width} × {swatch.image.height}px</span>
               </div>
             </div>
@@ -153,7 +149,7 @@ export function MaterialModal({ swatch, onClose, triggerElement }: MaterialModal
         </div>
 
         {/* Modal Footer */}
-        <div className="border-t border-[#F5F3EF]/15 pt-4 flex items-center justify-between text-[11px] text-[#B8B5B1]">
+        <div className="border-t border-[#F5F3EF]/15 pt-4 flex items-center justify-between text-[11px] text-[#B8B5B1] shrink-0">
           <span>Press ESC or click outside to dismiss</span>
           <button
             type="button"
