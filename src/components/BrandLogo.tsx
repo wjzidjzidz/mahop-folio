@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrandStar } from './BrandStar';
 
 export interface BrandLogoProps {
@@ -6,22 +5,19 @@ export interface BrandLogoProps {
   as?: 'span' | 'div' | 'h1' | 'h2';
   className?: string;
   starClassName?: string;
-  withDot?: boolean;
 }
 
 /**
  * Official BrandLogo Component: MAH★P
- * Assembled from "MAH", precision vector Star icon, and "P".
- * Consistent typography, optical kerning, and baseline alignment across all sizes.
+ * Assembled from "MAH", precision 5-point vector Star icon, and "P".
+ * Pure unboxed exhibition typography across all display scales.
  */
 export function BrandLogo({
   size = 'md',
   as: Component = 'span',
   className = '',
   starClassName = '',
-  withDot = false,
 }: BrandLogoProps) {
-  // Size-specific typography styles
   let sizeClasses = '';
   switch (size) {
     case 'sm':
@@ -31,10 +27,10 @@ export function BrandLogo({
       sizeClasses = 'text-2xl sm:text-3xl';
       break;
     case 'lg':
-      sizeClasses = 'text-4xl sm:text-5xl';
+      sizeClasses = 'text-4xl sm:text-6xl';
       break;
     case 'hero':
-      sizeClasses = 'text-[19vw] sm:text-[18vw] lg:text-[16vw] leading-[0.8]';
+      sizeClasses = 'text-[22vw] sm:text-[20vw] lg:text-[18vw] leading-[0.78]';
       break;
     case 'loader':
       sizeClasses = 'text-6xl sm:text-7xl md:text-8xl lg:text-9xl';
@@ -50,7 +46,7 @@ export function BrandLogo({
     >
       <span className="leading-none">MAH</span>
       <span
-        className="inline-flex items-center justify-center mx-[0.05em] shrink-0"
+        className="inline-flex items-center justify-center mx-[0.045em] shrink-0"
         aria-hidden="true"
       >
         <BrandStar
@@ -59,12 +55,6 @@ export function BrandLogo({
         />
       </span>
       <span className="leading-none">P</span>
-      {withDot && (
-        <span
-          className="w-1.5 h-1.5 rounded-full bg-[#F5F3EF]/40 ml-2 self-baseline mb-1 group-hover:bg-[#F5F3EF] transition-colors"
-          aria-hidden="true"
-        />
-      )}
     </Component>
   );
 }

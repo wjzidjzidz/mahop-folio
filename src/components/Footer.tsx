@@ -1,114 +1,177 @@
+import { useEffect, useRef, useState } from 'react';
 import { CONTACT_INFO } from '../data/content';
 import { Link } from '../router/RouterContext';
 import { BrandLogo } from './BrandLogo';
-import { useScrollReveal } from '../hooks/useScrollReveal';
+import { BrandStar } from './BrandStar';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export function Footer() {
-  const contactReveal = useScrollReveal({ threshold: 0.1 });
+  const footerRef = useRef<HTMLElement>(null);
+  const reducedMotion = useReducedMotion();
+  const [starSettled, setStarSettled] = useState(false);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setStarSettled(true);
+      return;
+    }
+
+    const el = footerRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setStarSettled(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]) {
+          setStarSettled(entries[0].isIntersecting);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [reducedMotion]);
 
   return (
-    <footer className="w-full bg-black border-t border-[#F5F3EF]/15 mt-24 text-[#F5F3EF]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        {/* Editorial Contact Bridge with M18 Reveal */}
+    <footer
+      ref={footerRef}
+      data-testid="white-footer"
+      className="relative w-full bg-white text-black"
+    >
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 pt-24 pb-16 sm:pt-32 sm:pb-20">
+        {/* Centered Star Finale */}
         <div
-          ref={contactReveal.ref}
-          className={`grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 mb-16 pb-16 border-b border-[#F5F3EF]/15 transition-opacity duration-500 ${
-            contactReveal.isVisible ? 'opacity-100 animate-contact-reveal' : 'opacity-85'
-          }`}
+          id="footer-star-dock"
+          data-testid="footer-star-dock"
+          data-settled={starSettled ? 'true' : 'false'}
+          className="flex flex-col items-center justify-center text-center pb-20 sm:pb-28"
         >
-          <div className="lg:col-span-5">
-            <span className="text-[11px] tracking-[0.25em] text-[#B8B5B1] uppercase block mb-4">
-              Stage Dialogue · Inquiries
+          <div
+            className="mb-10 flex h-16 w-16 items-center justify-center transition-all duration-700 ease-out"
+            style={{
+              opacity: starSettled ? 1 : 0.28,
+              transform: starSettled ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(-12px)',
+            }}
+            aria-hidden="true"
+          >
+            <BrandStar className="w-11 h-11 text-black" />
+          </div>
+
+          <h2 className="font-display uppercase tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.88] text-black max-w-5xl">
+            THE JOURNEY ENDS HERE.
+            <span className="block mt-2">THE CREATION CONTINUES.</span>
+          </h2>
+          <p className="mt-6 font-serif italic text-xl sm:text-2xl text-neutral-700">
+            Aurelia Mahop Di Toro — Nocturnal Textile Theatre
+          </p>
+        </div>
+
+        {/* Open Unboxed Contacts & Social Handles */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-8 pb-16 sm:pb-20">
+          <div className="md:col-span-5 space-y-2">
+            <span className="text-[10px] tracking-[0.28em] text-neutral-500 uppercase block font-mono">
+              Direct Dialogue
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display uppercase tracking-tight leading-none mb-6">
-              For enquiries, get in touch.
-            </h2>
-            <p className="text-xs sm:text-sm text-[#B8B5B1] max-w-md leading-relaxed font-sans">
-              Direct communication for commissions, collaborative research, curatorial dialogues, and textile acquisition.
+            <p className="text-2xl sm:text-3xl font-display uppercase tracking-tight text-black">
+              Aurelia Mahop Di Toro
+            </p>
+            <p className="text-xs sm:text-sm text-neutral-600 max-w-sm leading-relaxed font-sans pt-1">
+              Textile commissions, fashion collaborations, and exhibition enquiries.
             </p>
           </div>
 
-          <div className="lg:col-span-4 space-y-6">
+          <div className="md:col-span-4 space-y-5">
             <div>
-              <span className="text-[10px] tracking-[0.25em] text-[#B8B5B1] uppercase block mb-1">
-                Direct Email
+              <span className="text-[10px] tracking-[0.28em] text-neutral-500 uppercase block mb-1 font-mono">
+                Email
               </span>
               <a
                 href={CONTACT_INFO.emailHref}
-                className="editorial-link text-base sm:text-lg font-mono text-[#F5F3EF] focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-2 rounded-sm"
+                className="editorial-link text-base sm:text-lg font-mono text-black focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-4"
               >
                 {CONTACT_INFO.email}
               </a>
             </div>
 
             <div>
-              <span className="text-[10px] tracking-[0.25em] text-[#B8B5B1] uppercase block mb-1">
-                Direct Telephone
+              <span className="text-[10px] tracking-[0.28em] text-neutral-500 uppercase block mb-1 font-mono">
+                Telephone
               </span>
               <a
                 href={CONTACT_INFO.phoneHref}
-                className="editorial-link text-base sm:text-lg font-mono text-[#F5F3EF] focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-2 rounded-sm"
+                className="editorial-link text-base sm:text-lg font-mono text-black focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-4"
               >
                 {CONTACT_INFO.phone}
               </a>
             </div>
           </div>
 
-          <div className="lg:col-span-3 space-y-6">
-            <div>
-              <span className="text-[10px] tracking-[0.25em] text-[#B8B5B1] uppercase block mb-1">
-                Social Presence (Handles)
-              </span>
-              <div className="space-y-1 text-sm font-mono text-[#F5F3EF]">
-                <p className="flex items-center justify-between py-1 border-b border-[#F5F3EF]/10">
-                  <span className="text-xs text-[#B8B5B1]">Instagram</span>
-                  <a
-                    href={CONTACT_INFO.instagramHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="editorial-link focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-2 rounded-sm"
-                  >
-                    {CONTACT_INFO.instagramHandle}
-                  </a>
-                </p>
-                <p className="flex items-center justify-between py-1 border-b border-[#F5F3EF]/10">
-                  <span className="text-xs text-[#B8B5B1]">TikTok</span>
-                  <a
-                    href={CONTACT_INFO.tiktokHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="editorial-link focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-2 rounded-sm"
-                  >
-                    {CONTACT_INFO.tiktokHandle}
-                  </a>
-                </p>
+          <div className="md:col-span-3 space-y-4">
+            <span className="text-[10px] tracking-[0.28em] text-neutral-500 uppercase block font-mono">
+              Social
+            </span>
+            <div className="space-y-3 text-sm font-mono text-black">
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="text-xs text-neutral-500">Instagram</span>
+                <a
+                  href={CONTACT_INFO.instagramHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="editorial-link text-black focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-4"
+                >
+                  {CONTACT_INFO.instagramHandle}
+                </a>
+              </div>
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="text-xs text-neutral-500">TikTok</span>
+                <a
+                  href={CONTACT_INFO.tiktokHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="editorial-link text-black focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-4"
+                >
+                  {CONTACT_INFO.tiktokHandle}
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-xs text-[#B8B5B1] tracking-wider">
+        {/* Minimal Colophon */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-xs text-neutral-600">
           <div className="flex items-baseline gap-3">
-            <BrandLogo size="sm" className="text-[#F5F3EF]" />
-            <span className="text-[11px]">· NOCTURNAL TEXTILE THEATRE</span>
+            <BrandLogo size="sm" className="text-black" />
+            <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-neutral-500">
+              Nocturnal Textile Theatre
+            </span>
           </div>
 
-          <div className="flex items-center gap-6 text-[11px] tracking-widest uppercase">
-            <Link href="/work" className="editorial-link hover:text-white transition-colors">
+          <nav
+            aria-label="Footer navigation"
+            className="flex items-center gap-7 text-[11px] tracking-[0.24em] uppercase font-mono"
+          >
+            <Link
+              href="/work"
+              className="editorial-link text-black focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-4"
+            >
               Work
             </Link>
-            <Link href="/material" className="editorial-link hover:text-white transition-colors">
-              Material Library
+            <Link
+              href="/material"
+              className="editorial-link text-black focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-4"
+            >
+              Material
             </Link>
-            <Link href="/about" className="editorial-link hover:text-white transition-colors">
+            <Link
+              href="/about"
+              className="editorial-link text-black focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-4"
+            >
               About
             </Link>
-          </div>
-
-          <p className="text-[10px] text-[#B8B5B1]/60">
-            Aurelia Mahop Di Toro · Prototype v1
-          </p>
+          </nav>
         </div>
       </div>
     </footer>

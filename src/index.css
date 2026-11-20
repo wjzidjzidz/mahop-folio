@@ -4,7 +4,7 @@
   --stage-black: #000000;
   --interface-white: #F5F3EF;
   --interface-muted: #B8B5B1;
-  --interface-rule: rgba(245, 243, 239, 0.38);
+  --interface-rule: rgba(245, 243, 239, 0.22);
   --source-deep-red: #7B0000;
   --source-aurora-purple: #7C11B8;
   --source-etoile-red: #6B1111;
@@ -20,11 +20,19 @@
   --source-mahp-green-2: #485E39;
   --source-mahp-green-3: #618F65;
 
-  --font-display: 'Anton', 'Impact', 'Arial Black', -apple-system, sans-serif;
-  --font-sans: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Anton', 'Impact', 'Arial Black', sans-serif;
+  --font-serif: 'Cormorant Garamond', 'Georgia', serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @layer base {
+  html {
+    background-color: var(--stage-black);
+    color: var(--interface-white);
+    font-family: var(--font-sans);
+  }
+
   body {
     background-color: var(--stage-black);
     color: var(--interface-white);
@@ -36,196 +44,56 @@
 
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
   }
 }
 
 /* =========================================================================
-   MAHOP MOTION SYSTEM (M01 – M19)
-   Philosophy: "Reveal, settle, drift" · "Ink on black paper"
+   EXHIBITION MOTION SYSTEM — NOCTURNAL TEXTILE THEATRE
    ========================================================================= */
 
-/* M01: Wordmark reveal (450ms, ease-out, 12px offset) */
-@keyframes m01WordmarkReveal {
-  0% {
-    opacity: 0.15;
-    transform: translateY(12px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-wordmark-reveal {
-  animation: m01WordmarkReveal 450ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
-}
-
-/* M02: Fine-rule drawing (350ms, ease-out, scaleX(0) -> scaleX(1)) */
-@keyframes m02RuleDraw {
-  0% {
-    transform: scaleX(0);
-  }
-  100% {
-    transform: scaleX(1);
-  }
-}
-.animate-rule-draw {
-  transform-origin: left center;
-  animation: m02RuleDraw 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* M03: Image-mask reveal (550ms, ease-out) */
-@keyframes m03ImageReveal {
-  0% {
-    opacity: 0.4;
-    transform: scale(1.015);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-.animate-image-reveal {
-  animation: m03ImageReveal 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* M04: Project-title settling (450ms, offset 14px) */
-@keyframes m04TitleSettle {
-  0% {
-    opacity: 0.25;
-    transform: translateY(14px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-title-settle {
-  animation: m04TitleSettle 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* M05: Cut-out gentle drift (Desktop only, 8-12px subtle float) */
-@keyframes m05CutoutDrift {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-8px) scale(1.008);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
-@media (min-width: 768px) {
-  .animate-cutout-drift {
-    animation: m05CutoutDrift 7s ease-in-out infinite;
-  }
-}
-
-/* M06: Chapter-title outline and settle (450ms, offset 10px) */
-@keyframes m06ChapterTitle {
-  0% {
-    opacity: 0.3;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-chapter-title {
-  animation: m06ChapterTitle 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* M08: Chapter-image settling (500ms, scale 1.015/0.92 -> 1/1) */
-@keyframes m08ChapterImage {
-  0% {
-    opacity: 0.92;
-    transform: scale(1.015);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-.animate-chapter-image {
-  animation: m08ChapterImage 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* M10: MAH★P white-interlude reveal (400ms, clean opacity entrance) */
-@keyframes m10WhiteInterlude {
-  0% {
-    opacity: 0.45;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-.animate-white-interlude {
-  animation: m10WhiteInterlude 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* M11: Aurora collage-to-photography transition divider (400ms) */
-@keyframes m11AuroraTransition {
-  0% {
-    transform: scaleX(0);
-    opacity: 0.2;
-  }
-  100% {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-.animate-aurora-transition {
-  transform-origin: left center;
-  animation: m11AuroraTransition 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* M12: Aurora photography reveal (450ms, offset 8px) */
-@keyframes m12PhotoReveal {
-  0% {
-    opacity: 0.35;
-    transform: translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-photo-reveal {
-  animation: m12PhotoReveal 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* M14 & M15: Material Modal open & close */
-@keyframes m14ModalOpen {
-  0% {
-    opacity: 0;
-    transform: scale(0.99) translateY(4px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+@keyframes mahopModalOpen {
+  0% { opacity: 0; transform: scale(0.985) translateY(6px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 .animate-modal-open {
-  animation: m14ModalOpen 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: mahopModalOpen 190ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes m15ModalClose {
-  0% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.99) translateY(4px);
-  }
+@keyframes mahopModalClose {
+  0% { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(0.985) translateY(6px); }
 }
 .animate-modal-close {
-  animation: m15ModalClose 140ms ease-in both;
+  animation: mahopModalClose 140ms ease-in both;
 }
 
-/* M16: Editorial Link Underline Drawing (160ms ease-out) */
+@keyframes mahopMobileMenuIn {
+  0% { opacity: 0; transform: translateY(-8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-mobile-menu-in {
+  animation: mahopMobileMenuIn 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes mahopPageEnter {
+  0% { opacity: 0.72; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-page-enter {
+  animation: mahopPageEnter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Editorial underline hover transition */
 .editorial-link {
   position: relative;
   display: inline-flex;
@@ -238,7 +106,7 @@
   left: 0;
   width: 100%;
   height: 1px;
-  background-color: var(--interface-white);
+  background-color: currentColor;
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -248,155 +116,57 @@
   transform: scaleX(1);
 }
 
-/* M17: Mobile menu entry (200ms ease-out, 8px translation) */
-@keyframes m17MobileMenuIn {
-  0% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Hero multi-directional drifting exhibition plates */
+@keyframes heroDriftLR {
+  0%, 100% { transform: translate3d(-34px, 0, 0); }
+  50% { transform: translate3d(34px, -10px, 0); }
 }
-.animate-mobile-menu-in {
-  animation: m17MobileMenuIn 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+@keyframes heroDriftRL {
+  0%, 100% { transform: translate3d(34px, 0, 0); }
+  50% { transform: translate3d(-34px, 12px, 0); }
+}
+@keyframes heroDriftTB {
+  0%, 100% { transform: translate3d(0, -28px, 0); }
+  50% { transform: translate3d(10px, 28px, 0); }
+}
+@keyframes heroDriftBT {
+  0%, 100% { transform: translate3d(0, 26px, 0); }
+  50% { transform: translate3d(-10px, -26px, 0); }
+}
+@keyframes heroDriftDiag {
+  0%, 100% { transform: translate3d(-24px, 22px, 0); }
+  50% { transform: translate3d(24px, -22px, 0); }
+}
+.animate-hero-drift-lr { animation: heroDriftLR 24s ease-in-out infinite; }
+.animate-hero-drift-rl { animation: heroDriftRL 28s ease-in-out infinite; }
+.animate-hero-drift-tb { animation: heroDriftTB 22s ease-in-out infinite; }
+.animate-hero-drift-bt { animation: heroDriftBT 25s ease-in-out infinite; }
+.animate-hero-drift-diag { animation: heroDriftDiag 30s ease-in-out infinite; }
+
+/* Gentle cutout hover suspension */
+@keyframes cutoutFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -10px, 0); }
+}
+@media (min-width: 768px) {
+  .animate-cutout-drift {
+    animation: cutoutFloat 7.5s ease-in-out infinite;
+  }
 }
 
-/* M18: Contact section reveal (350ms, ease-out) */
-@keyframes m18ContactReveal {
-  0% {
-    opacity: 0.3;
-    transform: translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-contact-reveal {
-  animation: m18ContactReveal 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+/* Torn-paper edge silhouette for Aurora wheatpaste installations */
+.torn-paper-edge {
+  clip-path: polygon(
+    0% 2%, 8% 0%, 16% 2.5%, 27% 0.5%, 39% 2%, 52% 0%, 64% 2.2%, 78% 0.5%, 90% 2.4%, 100% 0.6%,
+    98.5% 18%, 100% 34%, 98.2% 52%, 100% 71%, 98.8% 88%, 100% 99%,
+    89% 97.6%, 76% 100%, 61% 98%, 48% 100%, 33% 97.8%, 19% 100%, 7% 98.2%, 0% 100%,
+    1.5% 84%, 0% 67%, 1.6% 49%, 0% 31%, 1.4% 14%
+  );
 }
 
-/* M19: Route/page transition (180ms subtle opacity and settle) */
-@keyframes m19PageEnter {
-  0% {
-    opacity: 0.82;
-    transform: translateY(6px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-page-enter {
-  animation: m19PageEnter 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* =========================================================================
-   MAH★P SIGNATURE INTRO LOADER ANIMATIONS
-   Phases:
-   A: Star rotates in isolation (0–550ms)
-   B: Letters MAH & P arrive from left & right (450–1000ms)
-   C: Unified logo settles (1000–1250ms)
-   D: Theatrical curtain reveal (1250–1800ms)
-   ========================================================================= */
-
-@keyframes introStarRotate {
-  0% {
-    opacity: 0;
-    transform: rotate(0deg) scale(0.85);
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: rotate(360deg) scale(1);
-  }
-}
-.animate-intro-star {
-  animation: introStarRotate 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes introMahSlide {
-  0% {
-    opacity: 0;
-    transform: translateX(-35px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-.animate-intro-mah {
-  animation: introMahSlide 420ms cubic-bezier(0.16, 1, 0.3, 1) 480ms both;
-}
-
-@keyframes introPSlide {
-  0% {
-    opacity: 0;
-    transform: translateX(35px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-.animate-intro-p {
-  animation: introPSlide 420ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
-}
-
-@keyframes introCurtainLeft {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-.animate-curtain-left {
-  animation: introCurtainLeft 480ms cubic-bezier(0.77, 0, 0.175, 1) both;
-}
-
-@keyframes introCurtainRight {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-.animate-curtain-right {
-  animation: introCurtainRight 480ms cubic-bezier(0.77, 0, 0.175, 1) both;
-}
-
-@keyframes introLogoFadeOut {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-.animate-intro-logo-exit {
-  animation: introLogoFadeOut 380ms ease-in both;
-}
-
-/* Custom editorial outlines and fine rules */
-.editorial-rule {
-  border-color: var(--interface-rule);
-}
-
-.text-stroke {
-  -webkit-text-stroke: 1px var(--interface-white);
-  color: transparent;
-}
-
-.text-stroke-subtle {
-  -webkit-text-stroke: 1px rgba(245, 243, 239, 0.5);
+/* Display stroke typography accents */
+.text-stroke-light {
+  -webkit-text-stroke: 1px rgba(245, 243, 239, 0.72);
   color: transparent;
 }
 
@@ -411,7 +181,7 @@
   }
 }
 
-/* Reduced motion preference compliance */
+/* Reduced motion compliance */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
@@ -420,30 +190,17 @@
     scroll-behavior: auto !important;
   }
 
-  /* Disable non-essential decorative animations while preserving static positioning transforms */
   .animate-cutout-drift,
-  .animate-intro-star,
-  .animate-intro-mah,
-  .animate-intro-p,
-  .animate-curtain-left,
-  .animate-curtain-right,
-  .animate-intro-logo-exit,
-  .animate-wordmark-reveal,
-  .animate-rule-draw,
-  .animate-image-reveal,
-  .animate-title-settle,
-  .animate-chapter-title,
-  .animate-chapter-image,
-  .animate-white-interlude,
-  .animate-aurora-transition,
-  .animate-photo-reveal,
+  .animate-hero-drift-lr,
+  .animate-hero-drift-rl,
+  .animate-hero-drift-tb,
+  .animate-hero-drift-bt,
+  .animate-hero-drift-diag,
   .animate-modal-open,
   .animate-modal-close,
   .animate-mobile-menu-in,
-  .animate-contact-reveal,
   .animate-page-enter {
     animation: none !important;
     transition: none !important;
   }
 }
-

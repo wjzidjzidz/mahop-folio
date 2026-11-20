@@ -1,0 +1,384 @@
+# MAH★P — Google AI Studio Master Prompt
+
+**Use this as the single build request in the existing `mahop-folio` project.**  
+**Execution mode:** complete implementation in one run; no plan output, no intermediate approval gates.
+
+```text
+You are now executing the complete approved MAH★P V2 transformation in the EXISTING Google AI Studio project `mahop-folio`.
+
+This is an implementation request, not a planning request. I do not want a plan, roadmap, feature proposal, staged delivery, mock-up-only response, or requests for approval between sections. Silently inspect the real project and attached specification files, then implement the entire approved experience in this one run. You may organise your internal engineering work into logical operations, but do not stop, ask me to approve each stage, or return a plan instead of working code.
+
+PROJECT
+MAH★P — Nocturnal Textile Theatre
+Live reference: https://mahop-prototype.netlify.app/
+Existing project: `mahop-folio`
+
+PRIMARY CREATIVE GOAL
+Transform MAH★P from a conventional portfolio into an immersive, scroll-led digital exhibition for fashion and textile creation. The visitor should feel that they are entering and travelling through several artistic worlds. Every project has its own visual identity and Three.js environment. As the visitor scrolls, the background remains behind the images, gradually recedes, and the original photographs become the main subject. Scrolling upward reverses the exact experience.
+
+The image work is the protagonist. The interface, copy and 3D effects are supporting elements. Do not build a generic black portfolio template, e-commerce catalogue, dashboard, or game.
+
+READ THE ATTACHED REFERENCE FILES
+Read and follow all of these completely before editing:
+- `01_MAHOP_MASTER_BLUEPRINT_V2.md`
+- `02_ART_DIRECTION_AND_DESIGN_SYSTEM.md`
+- `03_INFORMATION_ARCHITECTURE_AND_CONTENT.md`
+- `04_THREEJS_ENVIRONMENT_SPEC.md`
+- `05_SCROLL_AND_MOTION_DESIGN_SPEC.md`
+- `06_IMAGE_STORYTELLING_AND_ASSET_RULES.md`
+- `07_MATERIAL_TABLE_ABOUT_CONTACT_SPEC.md`
+- `08_TECHNICAL_ARCHITECTURE_AND_LIBRARIES.md`
+- `09_RESPONSIVE_ACCESSIBILITY_PERFORMANCE.md`
+- `10_QA_ACCEPTANCE_AND_RELEASE.md`
+- `11_CONTENT_ASSET_PROVENANCE_REGISTER.md`
+- all relevant Skills under `skills/`
+
+The reference docs are the detailed acceptance criteria. This prompt is the execution command.
+
+============================================================
+A. INSPECT THE REAL PROJECT — INTERNALLY, THEN KEEP WORKING
+============================================================
+
+Inspect the actual connected repository and project files, including where present:
+- `package.json` and lockfile
+- `README.md`
+- app entry point and current router
+- global CSS/Tailwind configuration
+- current content and asset data modules
+- current image folders and their actual pixel dimensions
+- current navigation, footer, brand logo/star, intro/loader and cursor components
+- current image component/lightbox/material dialog
+- scroll reveal hooks and all existing CSS/JS motion rules
+- Home, Work, all three project pages, Material, About and NotFound page components
+- `index.html`, Vite config and Netlify routing/configuration
+
+Verify the actual React, TypeScript, Vite, Tailwind and package versions. The prior project handoff reports React 19, TypeScript, Vite and Tailwind CSS 4, but the actual repository is authoritative. Preserve the existing custom router and route structure. Do not migrate frameworks or rewrite a working app simply to suit a preferred architecture.
+
+Find all contradictory/stale active project instructions. This is exclusively MAH★P. Ignore and do not apply old instructions that prohibit Three.js or describe a different portfolio. The approved V2 instructions explicitly authorise Three.js project environments.
+
+Create a recoverable checkpoint/branch if the connected environment supports it. If it does not, do not invent one; preserve existing source files and make changes safely. Do not publish, deploy, push, merge or modify the live Netlify site automatically.
+
+IMPORTANT: Do not report the audit findings as a plan. Finish the implementation in this same run.
+
+============================================================
+B. PRESERVE THE BRAND, CONTENT, ROUTES AND ORIGINAL ARTWORK
+============================================================
+
+Brand: MAH★P / MAHOP, preserving the current mark and star identity.
+Creative direction: `NOCTURNAL TEXTILE THEATRE — A STAGE, NOT A CATALOGUE`.
+
+Keep these routes unchanged and functional on direct load and refresh:
+- `/`
+- `/work`
+- `/work/letoile-maho`
+- `/work/mah-star-p`
+- `/work/aurora-de-liage-x-auro-dapunk`
+- `/material`
+- `/about`
+
+Use the existing project's local asset map and content modules. Do not invent paths or assume assets exist. Preserve all existing user content, images, transparency, aspect ratios, titles, source page mappings, credits, captions and publication-review/rights flags.
+
+Never replace original fashion photos, fashion illustrations, textile swatches or collages with stock imagery or AI-generated fashion content. Never hotlink remote photos. Never invent model/photographer/stylist credits, garment details, fibre composition, textile techniques, provenance, awards, education, career history, client names or project stories.
+
+Use exact current contact information:
+- `theycallmemaho@gmail.com` / `mailto:theycallmemaho@gmail.com`
+- `+39 375 1295019` / `tel:+393751295019`
+- Instagram `@callmemahop`
+- TikTok `@callmemahop`
+
+For social targets, use only the exact existing URLs in the repository. Do not invent a URL.
+
+============================================================
+C. IMPLEMENT THE COMPLETE HOMEPAGE JOURNEY
+============================================================
+
+The home route `/` must become the main continuous artistic journey.
+
+MOVEMENT 01 — THE GATEWAY / HOME
+- Use a very large MAHOP wordmark as the dominant first-view element.
+- Use authentic images from all three existing projects around the wordmark.
+- Let images drift in different directions: left-to-right, right-to-left, top-to-bottom and restrained diagonal motion.
+- Keep background images at low opacity so the logo is immediately readable.
+- Use layered scale, depth and spacing; do not create a crowded collage.
+- Keep the first view editorial and dark. A heavy Three.js home environment is not required; save the main 3D effort for the project backgrounds.
+- Use a small scroll cue and a graceful transition into the first project.
+- Do not create a blocking multi-second loader.
+
+MOVEMENT 02 — L'ETOILE MAHO
+This is one project with four chapters, in this exact order:
+1. Mercury
+2. Uranus
+3. Pluto
+4. Mars
+
+Give each chapter its own Three.js planet scene. Use chapter colour references locally:
+- Mercury: grey `#7B7373`
+- Uranus: pale cyan `#95BFBC`
+- Pluto: charcoal `#454644`
+- Mars: terracotta/orange `#E87F3E`
+
+Create distinct planet surfaces, atmospheres, lighting, camera presets and a few subtle particles. They must not be four identical spheres with only a different colour. Keep the scenes cinematic, restrained and tactile.
+
+CRITICAL SCROLL BEHAVIOUR:
+- When a chapter enters, the planet is clearly visible with its title.
+- The planet and its Three.js environment stay anchored in a sticky visual stage as the user continues to scroll.
+- Original photos, cut-outs, collage pieces, illustrations and textile details then move into the foreground.
+- As the image story takes over, reduce the background/planet opacity and contrast progressively. The planet must remain faintly present; do not remove it abruptly.
+- Keep the chapter title visible for the intended part of the sequence.
+- When the visitor scrolls upward, reverse the exact timeline: foreground images withdraw, the planet regains opacity and the title returns to its opening relationship.
+- Use one reusable, data-driven scene/story architecture; do not mount all four heavy WebGL renderers permanently.
+
+Use the exact existing asset-to-chapter mapping. Preserve project-level credits exactly where supported:
+Models: Julien, Kyma & Chaïna. Photographer: Sirine. Clothing made by: Aurelia Mahop Di Toro. Do not assume the same credits apply to other projects or invent chapter-specific contributors.
+
+MOVEMENT 03 — MAH★P / WHITE INTERLUDE
+- This is the first act of the existing MAH★P project, not a new project.
+- Preserve the original source-page-20 and source-page-21 flattened white collage compositions.
+- The white composition is an intentional interruption of the nocturnal stage.
+- Do not recolour it, darken it, cover it with a black overlay or rebuild it from invented pieces.
+- Use the authentic original artwork as the focal composition.
+
+MOVEMENT 04 — MAH★P / EDITORIAL STUDIO PHOTOGRAPHY
+This is the second act of the same MAH★P project, after the White Interlude.
+- Create a Three.js nature environment: green field, layered grass/vegetation, organic depth, soft natural light and very subtle wind-driven grass motion.
+- It should feel like an editorial outdoor set, not a game and not stock nature photography.
+- Use the two existing source-page-22 photos only:
+  - `p22-photo-striped-trousers-closeup.jpg`
+  - `p22-photo-striped-trousers-seated-wide.jpg`
+  Find and use their exact existing local mapped paths.
+- The photos are the main subjects and must remain on top of the 3D environment.
+- Use large, readable, varied editorial compositions with restrained zoom, mask reveal and alternating positioning.
+- Preserve credits: Photographer Avi Bellaiche; Model BAAN. Do not invent a garment maker.
+- The photo sequence and background must reverse naturally on upward scrolling.
+
+MOVEMENT 05 — AURORA DE LIAGE X AURO DA'PUNK
+- Create a Three.js punk/urban street-art environment using layered concrete/wall planes, torn poster relief, restrained paint/spray texture and controlled low-key lighting.
+- It must feel like an intentional underground art installation, not a generic graffiti wallpaper.
+- Use the original page-3 collage as the leading foreground artwork; preserve all its original torn edges, crochet/gold texture and colours.
+- Follow with the original page-4 photography sequence.
+- Use the existing original model cut-outs/illustrations where mapped and appropriate.
+- Preserve credits exactly: Photographer Raphaël Kassouri; Stylist `@Playarabian`; Model Brazy; Dress by Aurelia Mahop Di Toro.
+- The collage-to-photo sequence should be visually strong but must not obscure or distort the real work.
+- Scroll down and reverse scroll must both work.
+
+============================================================
+D. IMAGE STORYTELLING — THE IMAGES ARE THE MAIN CONTENT
+============================================================
+
+Across all projects, make photography and original visual work the most important elements. Aim for an image-dominant experience; text should be concise and supportive.
+
+Use a varied mix of:
+- monumental full-width or full-height photos;
+- asymmetric photo pairs;
+- vertical editorial portraits;
+- close-up details of textiles and garment construction;
+- original flattened collages;
+- transparent model/illustration cut-outs;
+- restrained horizontal image drifts;
+- selective zoom and mask reveals.
+
+Do not animate every image at once. Mix moving and still images so the visitor can properly inspect the garments. Never stretch source images. Preserve ratio and avoid crops that cut off the subject/garment detail. Use only mapped local assets.
+
+============================================================
+E. MATERIALS — THE MATERIAL TABLE (EXACTLY 24 ITEMS)
+============================================================
+
+Transform `/material` into a single large textile research board containing all 24 currently mapped image-backed samples in the asset manifest.
+
+- Show all 24 samples together at the start of the section.
+- Use a deliberate table/grid arrangement, ideally a balanced 6×4 or 4×6 desktop grid after checking real dimensions.
+- Tablet should reflow to an orderly 3–4 columns; mobile to 2 columns or an equally clear vertical table.
+- Preserve original texture, ratio and material edges; do not crop to force uniformity.
+- Use identifiers MATERIAL 01–MATERIAL 24. Do not fabricate names, fibres or production techniques.
+- Every sample must be clickable/tappable.
+- On activation, open a stable-size accessible detail view with the real image, identifier and only verified source metadata.
+- Support close button, Escape, keyboard focus management and focus restoration; preserve scroll position when returning to the table.
+
+SCROLL STORY:
+- Start with every one of the 24 samples visible.
+- As the visitor scrolls, progressively fade/translate selected samples or small groups away in a carefully staggered rhythm.
+- Do not make all 24 disappear together.
+- Some samples should stay visible longer to create an authored visual dismantling.
+- When scrolling upward, some of the disappeared samples must reappear; at the top, restore the full table.
+- This must be driven by a reversible scroll timeline, not random or one-way triggers.
+- After the final samples have disappeared, reveal the complete About section.
+
+Do not include the three unresolved/unmapped provisional source records. The current public Materials page contains exactly 24 mapped display samples. Keep the public count at 24.
+
+============================================================
+F. ABOUT — REVEAL AFTER MATERIALS
+============================================================
+
+Build About as the next visual act after the 24-sample sequence.
+
+- About is fully revealed only after the table sequence completes.
+- Place `ABOUT` at the top.
+- Put the existing authentic fashion illustration in the centre as the visual anchor.
+- Put the existing verified About text alongside the illustration.
+- Preserve the actual image mapping already used by the current About page. Do not choose a random new or generated illustration.
+- Preserve only factual content already present in the project/source.
+- Do not invent a biography, education, age, career timeline, awards, exhibitions, client list or credentials.
+- Direct route `/about` must work without requiring users to scroll through Materials first.
+- Reverse scroll from About must restore some of the Material samples in the sequence.
+
+============================================================
+G. THE MAH★P STAR COMPANION AND WHITE FOOTER
+============================================================
+
+Create one small recognisable MAH★P star companion that follows the visitor through the main journey.
+
+- Reuse the original brand star component/SVG if available.
+- It should drift/follow along the scroll path with a subtle glow and restrained motion.
+- It may adopt a slight environmental light tint in the planetary, green and punk sections, but its silhouette/identity remains recognisable.
+- It must not block content, links or sample buttons.
+- It should use pointer-events none unless a true accessible control is deliberately implemented.
+- When the visitor reaches the end, the star moves into the exact centre of the footer, decelerates and settles there.
+
+FOOTER:
+- Use a clean white footer as requested.
+- Reveal the final message in a composed editorial layout:
+  `THE JOURNEY ENDS HERE.`
+  `THE CREATION CONTINUES.`
+- Retain email, phone, Instagram and TikTok details exactly.
+- Do not add a contact form.
+- Avoid noisy animation after the star settles.
+
+============================================================
+H. GLOBAL ART DIRECTION
+============================================================
+
+Use the existing established MAH★P visual identity:
+- Main stage black `#000000`.
+- Warm white `#F5F3EF`.
+- White footer `#FFFFFF`.
+- Secondary grey `#B8B5B1`.
+- Existing display/body font setup (prior project references say Anton + Space Grotesk; verify and preserve what actually exists).
+- Fine editorial rules, negative space, strong scale, asymmetrical layouts and minimal navigation.
+- Project accents stay local to their scene.
+
+Avoid:
+- generic equal-size portfolio cards;
+- ecommerce product cards/prices/cart;
+- generic dashboard panels;
+- glassmorphism everywhere;
+- random floating gradients;
+- excessive glow/bloom;
+- every image moving at once;
+- fake captions, fake credits or invented story copy;
+- AI-generated/stock replacement fashion photography;
+- a heavy Three.js canvas covering every part of the site without a purpose.
+
+============================================================
+I. IMPLEMENTATION AND DEPENDENCY RULES
+============================================================
+
+Preserve the actual existing framework/router/build setup. The previous handoff reports React 19, TypeScript, Vite and Tailwind CSS 4; verify before coding.
+
+For Three.js:
+- Add `three` and `@react-three/fiber` only if not already present and after compatibility verification.
+- R3F v9 pairs with React 19; R3F v8 pairs with React 18. Use the stable matching version. Do not use the v10 alpha.
+- Add `@react-three/drei` only for helpers that are truly used.
+- Do not add a heavyweight post-processing suite by default.
+
+For scroll motion:
+- Use GSAP + ScrollTrigger as the primary timeline system if compatible.
+- Use `@gsap/react`/scoped contexts for clean React lifecycle.
+- Use CSS for small hover/focus effects.
+- Do not add Lenis, Framer Motion/Motion, React Spring or another animation engine by default.
+- Keep native scroll and make every scroll-linked sequence reversible.
+
+Performance:
+- Use a shared/reusable Three.js scene host; do not run six heavy WebGL contexts at once.
+- Lazy-load scene code and noncritical photos.
+- Use instancing for grass/particles, low mobile DPR and reduced scene complexity.
+- Pause scenes when not visible.
+- Clean up event listeners, ScrollTriggers, geometries, materials and textures.
+- Provide a clean fallback when WebGL is unavailable.
+
+No new backend, database, auth, analytics, tracking, contact service, external API, Gemini API, API key, paid service or billing.
+
+============================================================
+J. RESPONSIVE AND ACCESSIBLE IMPLEMENTATION
+============================================================
+
+Desktop can use full-viewport sticky stages, layered photos and nuanced scroll scenes.
+Tablet reduces overlap and scene complexity while preserving the story.
+Mobile uses a deliberate single-column editorial composition, simplified 3D/near-static scenes, two-column material grid, no hover-only controls, no heavy pinned sequences and no horizontal document overflow.
+
+Implement:
+- semantic HTML and logical heading order;
+- skip link;
+- visible keyboard focus;
+- touch-friendly controls;
+- image alt text;
+- accessible material detail dialog with Escape/focus return;
+- reduced-motion mode that reveals every image and section without scroll animation;
+- graceful WebGL failure fallback.
+
+The canvas and decorative star are aria-hidden. They must never be the only way to understand or access project content.
+
+============================================================
+K. ONE-RUN IMPLEMENTATION — DO NOT STOP AFTER A PLAN
+============================================================
+
+Implement the complete project now. Do not ask me to approve a plan or phases.
+
+Required outcome in this run:
+1. Update the Home experience.
+2. Update Work archive and all three project detail routes.
+3. Build all six Three.js scene variants.
+4. Implement sticky project environments and reversible image-first scroll timelines.
+5. Build the 24-sample Material Table and accessible sample detail interaction.
+6. Implement the Materials-to-About reveal sequence.
+7. Implement the central About illustration layout.
+8. Implement the persistent star companion and white final footer.
+9. Preserve all existing data/assets/routes/contact links.
+10. Implement responsive, reduced-motion and WebGL fallback behaviour.
+11. Run available build/type/lint/test checks.
+12. Correct issues found during those checks before finalising.
+
+Do not stop at a visual mockup or a single route. Do not send intermediate completion claims. If a noncritical detail is ambiguous, make a safe decision grounded in the existing source and finish the work.
+
+============================================================
+L. VALIDATION — ACTUALLY RUN WHAT IS AVAILABLE
+============================================================
+
+Inspect package.json and run the project's real scripts for build, lint, TypeScript and tests. Do not invent scripts or claim commands that were not run.
+
+Directly test/refresh all seven routes:
+`/`, `/work`, `/work/letoile-maho`, `/work/mah-star-p`, `/work/aurora-de-liage-x-auro-dapunk`, `/material`, `/about`.
+
+Inspect available browser previews at desktop, tablet and mobile sizes. Test:
+- forward and reverse scroll through all planet chapters;
+- White Interlude → Editorial Studio Photography transition;
+- Editorial Studio Photography image sequence;
+- Aurora collage → photo sequence;
+- every Material detail interaction, close/Escape/focus return;
+- all 24 samples visible at Materials entry;
+- staggered disappearance and reverse reappearance;
+- About reveal after Materials and direct `/about` entry;
+- star companion movement and final footer-centre arrival;
+- menu/navigation and contact links;
+- reduced-motion mode;
+- WebGL fallback if testable;
+- no broken images, horizontal overflow or console errors.
+
+Be truthful: if a browser/device test or WebGL-disabled state cannot be tested in this environment, mark it NOT VERIFIED.
+
+============================================================
+M. FINAL DELIVERY REPORT
+============================================================
+
+Only after the full implementation and self-correction, return one report with:
+1. What was implemented across Home, Work, projects, Materials, About and footer.
+2. The Three.js scene variants completed.
+3. Routes preserved.
+4. Main files/components changed.
+5. Dependencies added or changed and why.
+6. Exact checks/commands actually run and their results.
+7. Browser routes/viewports/interactions actually tested.
+8. Any remaining issue, missing image, rights/consent concern or unverified check.
+9. Explicit confirmation that no deployment/publish/push was made automatically.
+
+Do not say “everything is perfect” without evidence. Do not return another plan. Begin implementing the complete MAH★P experience now.
+```

@@ -1,0 +1,122 @@
+{
+  "package": "MAH★P Immersive Experience V2",
+  "version": "2.0",
+  "created": "2026-11-20",
+  "files": [
+    {
+      "path": "00_README_START_HERE.md",
+      "bytes": 6857,
+      "sha256": "daf6ee332fc4261a135aec475a6945ec08b57f9f697f8c59b0ccd194b0a55c6c"
+    },
+    {
+      "path": "01_MAHOP_MASTER_BLUEPRINT_V2.md",
+      "bytes": 14674,
+      "sha256": "6d917541e6e71df4de957707a6acbfa771d72adc304a28e0a9210b9397aea5c1"
+    },
+    {
+      "path": "02_ART_DIRECTION_AND_DESIGN_SYSTEM.md",
+      "bytes": 5602,
+      "sha256": "53e38939468a5b3f24bd26f9c041921088d845b0ee96fe10f415c4b42cdccafa"
+    },
+    {
+      "path": "03_INFORMATION_ARCHITECTURE_AND_CONTENT.md",
+      "bytes": 5917,
+      "sha256": "829b9b87dafca0a2e91691d412182d1933f9da4583e7fe472d28546515e7590c"
+    },
+    {
+      "path": "04_THREEJS_ENVIRONMENT_SPEC.md",
+      "bytes": 7707,
+      "sha256": "f9b4ec05c408819da64f16b153e00ac933d97b544c73f50d86daddcc08a9fb6d"
+    },
+    {
+      "path": "05_SCROLL_AND_MOTION_DESIGN_SPEC.md",
+      "bytes": 8435,
+      "sha256": "c88d1cb6e122d868b6bf7467192bc813ffa97d403ddb97e1c74d61a869346ca6"
+    },
+    {
+      "path": "06_IMAGE_STORYTELLING_AND_ASSET_RULES.md",
+      "bytes": 5478,
+      "sha256": "e394b6784e5749de052db257bc3d89a6c5d6e0a77ec2b75b696855da0760b09d"
+    },
+    {
+      "path": "07_MATERIAL_TABLE_ABOUT_CONTACT_SPEC.md",
+      "bytes": 5103,
+      "sha256": "63fdc7dcc987195cda9c7c4834624501e480ff27fbd78df8f064cc4f332d47c8"
+    },
+    {
+      "path": "08_TECHNICAL_ARCHITECTURE_AND_LIBRARIES.md",
+      "bytes": 6572,
+      "sha256": "d5e58e885791c3ed4c349e80609df80855b62748c7a5514c554b052da65793fb"
+    },
+    {
+      "path": "09_RESPONSIVE_ACCESSIBILITY_PERFORMANCE.md",
+      "bytes": 4988,
+      "sha256": "fa7caf909cc713f5090429e510d1f1af2b094e57941e2334a5e13f503c879623"
+    },
+    {
+      "path": "10_QA_ACCEPTANCE_AND_RELEASE.md",
+      "bytes": 6282,
+      "sha256": "04d0edd3ce282ac27ff802a521582ca1934dacf489d1b7e1e237898cde064697"
+    },
+    {
+      "path": "11_CONTENT_ASSET_PROVENANCE_REGISTER.md",
+      "bytes": 7297,
+      "sha256": "013649ee169bcd99fd5be283b9658034d7feb5893c0c612504e8378a75186ad8"
+    },
+    {
+      "path": "12_GOOGLE_AI_STUDIO_PROJECT_INSTRUCTIONS.md",
+      "bytes": 6734,
+      "sha256": "c00e457079ec6b44f1f83a40292437f7659cc7dbc33810cac3df92975d1cac12"
+    },
+    {
+      "path": "13_GOOGLE_AI_STUDIO_MASTER_PROMPT.md",
+      "bytes": 22426,
+      "sha256": "038cc2e30e75bfe097a8122a67d37098fb5db47238020a37e6bfb99e3a455067"
+    },
+    {
+      "path": "14_LIBRARY_AND_DOCUMENTATION_REFERENCES.md",
+      "bytes": 2769,
+      "sha256": "192e4a4899499f2b0307ef9a8ed28577518357833b1899f2c8322c6016ee81cd"
+    },
+    {
+      "path": "15_MAHOP_COMPLETE_REFERENCE_BUNDLE.md",
+      "bytes": 88559,
+      "sha256": "eaec279a023702cadc8fdeed2dc8f82b6f1a5cccf58713a404cff6fdb15c8214"
+    },
+    {
+      "path": "GOOGLE_AI_STUDIO_INSTRUCTIONS.txt",
+      "bytes": 6735,
+      "sha256": "8a62461390cb742ca47fa61c831fb50d4c51c40f4714b486118b4b982d92d23c"
+    },
+    {
+      "path": "GOOGLE_AI_STUDIO_MASTER_PROMPT.txt",
+      "bytes": 22427,
+      "sha256": "73bc449cc8719c68be8badb239651a74fd58dcb86f1288ea950c25f0dcf9e6d7"
+    },
+    {
+      "path": "skills/SKILL_MAHOP_ACCESSIBILITY_PERFORMANCE_QA.md",
+      "bytes": 1117,
+      "sha256": "ab7c4d07a8319ac2117097195bbb477ceec4b65d62bc89031c46ca38f9e6b414"
+    },
+    {
+      "path": "skills/SKILL_MAHOP_ART_DIRECTION.md",
+      "bytes": 1291,
+      "sha256": "bbeaf331dc1e1052e62dcfca2ff8f2b019d9e4a7e9aca9db11a665a63c207212"
+    },
+    {
+      "path": "skills/SKILL_MAHOP_ASSET_AND_CONTENT_INTEGRITY.md",
+      "bytes": 760,
+      "sha256": "33dee04fffa6e31f79841561c1eacd5fbea1d8bb5150bc8082e55ffcaf0d8d6a"
+    },
+    {
+      "path": "skills/SKILL_MAHOP_SCROLL_MOTION.md",
+      "bytes": 1132,
+      "sha256": "224bc7c0c8bee34cc69dcbc0efed966d058cbd7c90da5f45407259369dca4fe1"
+    },
+    {
+      "path": "skills/SKILL_MAHOP_THREEJS_ENVIRONMENTS.md",
+      "bytes": 1155,
+      "sha256": "9105788455b23f5bc07c72f0c8a9a6fb8a955d97e779f2a6d6a6b0fcaa56a440"
+    }
+  ]
+}
