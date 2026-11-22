@@ -1,17 +1,22 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   computePlanetary2DTransitionState,
   PROJECT_ENVIRONMENTS,
+  stepMobilePlanetaryScrubState,
+  type DeviceTier,
   type EnvironmentSceneId,
+  type MobilePlanetaryScrubState,
   type PlanetKind,
 } from '../../utils/journeyLogic';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { useExhibitionStage } from '../../context/ExhibitionStageContext';
 import { Planetary2DWorlds } from './Planetary2DWorlds';
 
 interface Planetary2DUniverseProps {
   sceneId: EnvironmentSceneId;
   scrollProgressRef: React.MutableRefObject<number>;
   active: boolean;
+  deviceTier?: DeviceTier;
 }
 
 interface Planet2DSlotSpec {
@@ -150,8 +155,10 @@ export function Planetary2DUniverse({
   sceneId,
   scrollProgressRef,
   active,
+  deviceTier = 'phone',
 }: Planetary2DUniverseProps) {
   const reducedMotion = useReducedMotion();
+  const { planetJourneyRef } = useExhibitionStage();
   const rootRef = useRef<HTMLDivElement>(null);
   const exteriorLayerRef = useRef<HTMLDivElement>(null);
   const portalRingRef = useRef<HTMLDivElement>(null);
@@ -164,10 +171,21 @@ export function Planetary2DUniverse({
     mars: null,
   });
   const parallaxRef = useRef(0);
+  const targetSceneRef = useRef<EnvironmentSceneId>(sceneId);
+  targetSceneRef.current = sceneId;
+
+  const scrubStateRef = useRef<MobilePlanetaryScrubState>({
+    sceneId,
+    progress: scrollProgressRef.current,
+  });
+  const [renderedSceneId, setRenderedSceneId] = useState<EnvironmentSceneId>(sceneId);
 
   const activeChapterPlanet: PlanetKind | null =
-    sceneId === 'mercury' || sceneId === 'uranus' || sceneId === 'pluto' || sceneId === 'mars'
-      ? sceneId
+    renderedSceneId === 'mercury' ||
+    renderedSceneId === 'uranus' ||
+    renderedSceneId === 'pluto' ||
+    renderedSceneId === 'mars'
+      ? renderedSceneId
       : null;
 
   const starPins = useMemo(
@@ -181,17 +199,50 @@ export function Planetary2DUniverse({
     []
   );
 
+  // Continuous single-rAF smooth scrubbing loop (phone uses frame-delta damping; tablet keeps native tracking)
+  // Using (reducedMotion ? sceneId : null) updates static reduced-motion frames cleanly without restarting the active rAF loop.
+  const reducedMotionSceneKey = reducedMotion ? sceneId : null;
   useEffect(() => {
     if (!active) return;
     let rafId = 0;
+    let lastTime = performance.now();
 
     const applyFrame = () => {
-      const progress = scrollProgressRef.current;
-      const st = computePlanetary2DTransitionState(sceneId, progress, reducedMotion);
+      const now = performance.now();
+      const dtSec = Math.max(0.001, Math.min(0.05, (now - lastTime) / 1000));
+      lastTime = now;
+
+      const targetScene = targetSceneRef.current;
+      const targetProgress = scrollProgressRef.current;
+      const isDirectFlight = planetJourneyRef.current.active;
+
+      const nextScrub =
+        deviceTier === 'phone'
+          ? stepMobilePlanetaryScrubState(
+              scrubStateRef.current,
+              targetScene,
+              targetProgress,
+              dtSec,
+              reducedMotion,
+              isDirectFlight
+            )
+          : { sceneId: targetScene, progress: targetProgress };
+
+      scrubStateRef.current = nextScrub;
+
+      setRenderedSceneId((prev) => (prev === nextScrub.sceneId ? prev : nextScrub.sceneId));
+
+      const st = computePlanetary2DTransitionState(
+        nextScrub.sceneId,
+        nextScrub.progress,
+        reducedMotion
+      );
       parallaxRef.current = st.worldParallaxProgress;
 
       if (rootRef.current) {
         rootRef.current.style.setProperty('--p2d-parallax', String(st.worldParallaxProgress));
+        rootRef.current.setAttribute('data-scrub-scene', nextScrub.sceneId);
+        rootRef.current.setAttribute('data-scrub-progress', String(nextScrub.progress));
         rootRef.current.setAttribute('data-portal-iris', String(Math.round(st.portalIrisRadiusPercent)));
         rootRef.current.setAttribute('data-interior-opacity', String(st.interiorWorldOpacity));
       }
@@ -250,17 +301,17 @@ export function Planetary2DUniverse({
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
     };
-  }, [active, sceneId, scrollProgressRef, reducedMotion]);
+  }, [active, deviceTier, scrollProgressRef, planetJourneyRef, reducedMotion, reducedMotionSceneKey]);
 
   const activeSpec = PLANET_SLOTS.find((s) => s.id === activeChapterPlanet);
-  const accentHex = PROJECT_ENVIRONMENTS[sceneId]?.accentHex || '#F5F3EF';
+  const accentHex = PROJECT_ENVIRONMENTS[renderedSceneId]?.accentHex || '#F5F3EF';
 
   return (
     <div
       ref={rootRef}
       aria-hidden="true"
       data-testid="planetary-2d-universe"
-      data-planetary-scene={sceneId}
+      data-planetary-scene={renderedSceneId}
       className="pointer-events-none absolute inset-0 overflow-hidden bg-black"
     >
       {/* Distant Cosmic Starfield & Subtle Orbital Constellation */}

@@ -29,6 +29,15 @@ const CHAPTER_SUBTITLES: Record<string, string> = {
 
 const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV'] as const;
 
+// Tailored mobile (< 768px) portal scroll runways so each planetary sequence unfolds naturally
+// across ~195–230% viewport height without altering md: (tablet/desktop 235vh) behaviour.
+const MOBILE_PORTAL_RUNWAY_CLASSES: Record<string, string> = {
+  mercury: 'relative min-h-[230svh] md:min-h-[235vh]',
+  uranus: 'relative min-h-[215svh] md:min-h-[235vh]',
+  pluto: 'relative min-h-[195svh] md:min-h-[235vh]',
+  mars: 'relative min-h-[225svh] md:min-h-[235vh]',
+};
+
 export function LetoileSection({ showHeader = true }: LetoileSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const introStageRef = useRef<HTMLDivElement>(null);
@@ -410,7 +419,7 @@ export function LetoileSection({ showHeader = true }: LetoileSectionProps) {
             className={
               reducedMotion
                 ? 'relative px-5 sm:px-8 lg:px-14 pt-24 pb-12'
-                : 'relative min-h-[175vh] sm:min-h-[190vh]'
+                : 'relative min-h-[195svh] md:min-h-[190vh]'
             }
           >
             <div
@@ -575,7 +584,7 @@ export function LetoileSection({ showHeader = true }: LetoileSectionProps) {
                 className={
                   reducedMotion
                     ? 'relative min-h-[54svh] flex flex-col justify-end px-5 sm:px-10 lg:px-16 pb-12 pointer-events-none'
-                    : 'relative min-h-[185vh] sm:min-h-[235vh]'
+                    : MOBILE_PORTAL_RUNWAY_CLASSES[chapterId] || 'relative min-h-[215svh] md:min-h-[235vh]'
                 }
               >
                 <div

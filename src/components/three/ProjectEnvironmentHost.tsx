@@ -317,6 +317,7 @@ export function ProjectEnvironmentHost() {
           sceneId={sceneId}
           scrollProgressRef={scrollProgressRef}
           active={showHost}
+          deviceTier={tierState.tier}
         />
       )}
 

@@ -23,6 +23,8 @@ import {
   sceneUsesWebGL,
   shouldRenderWebGLHost,
   SOLAR_PLANET_SPECS,
+  stepMobilePlanetaryScrubState,
+  type MobilePlanetaryScrubState,
   type PlanetKind,
 } from './journeyLogic';
 
@@ -403,4 +405,46 @@ test('computePlanetary2DTransitionState smoothly orchestrates gateway -> overvie
   assert.equal(reduced.interiorWorldOpacity, 1);
   assert.equal(reduced.portalVeilOpacity, 0);
 });
+
+test('stepMobilePlanetaryScrubState prevents fast-swipe skipping, preserves slow attachment, and reverses immediately', () => {
+  // 1) Fast downward swipe from 0 -> 0.45: must NOT jump straight to 0.45 in a few frames
+  let state: MobilePlanetaryScrubState = { sceneId: 'uranus', progress: 0 };
+  for (let i = 0; i < 6; i++) {
+    state = stepMobilePlanetaryScrubState(state, 'uranus', 0.45, 0.016, false, false);
+  }
+  // After ~96ms, still passing through early focus/portal stages cleanly
+  assert.ok(state.progress > 0.02 && state.progress < 0.12);
+
+  // Continues sweeping cleanly through portal -> arrives at 0.45 after sustained frames
+  for (let i = 0; i < 90; i++) {
+    state = stepMobilePlanetaryScrubState(state, 'uranus', 0.45, 0.016, false, false);
+  }
+  assert.ok(Math.abs(state.progress - 0.45) < 0.01);
+
+  // 2) Fast downward cross-chapter jump from overview -> mars at target 0.36 seeds from 0 so portal unfolds
+  const entered = stepMobilePlanetaryScrubState(
+    { sceneId: 'letoile-overview', progress: 0.9 },
+    'mars',
+    0.36,
+    0.016,
+    false,
+    false
+  );
+  assert.equal(entered.sceneId, 'mars');
+  assert.ok(entered.progress > 0 && entered.progress < 0.03);
+
+  // 3) Immediate direction reversal on the very next frame
+  const mid: MobilePlanetaryScrubState = { sceneId: 'mercury', progress: 0.28 };
+  const reversed = stepMobilePlanetaryScrubState(mid, 'mercury', 0.05, 0.016, false, false);
+  assert.ok(reversed.progress < mid.progress);
+
+  // 4) Direct I-IV click flight & reducedMotion bypass damping
+  const direct = stepMobilePlanetaryScrubState(mid, 'pluto', 0.42, 0.016, false, true);
+  assert.equal(direct.sceneId, 'pluto');
+  assert.equal(direct.progress, 0.42);
+  const reduced = stepMobilePlanetaryScrubState(mid, 'mars', 0.55, 0.016, true, false);
+  assert.equal(reduced.sceneId, 'mars');
+  assert.equal(reduced.progress, 0.55);
+});
+
 

@@ -1270,3 +1270,104 @@ export function computePlanetary2DTransitionState(
   };
 }
 
+export interface MobilePlanetaryScrubState {
+  sceneId: EnvironmentSceneId;
+  progress: number;
+}
+
+const PLANETARY_SCENE_ORDER: Record<EnvironmentSceneId, number> = {
+  gateway: 0,
+  'letoile-overview': 1,
+  mercury: 2,
+  uranus: 3,
+  pluto: 4,
+  mars: 5,
+  'white-collage': 6,
+  'editorial-nature': 7,
+  'aurora-punk': 8,
+  'ambient-archive': 9,
+};
+
+function isPlanetChapterScene(sceneId: EnvironmentSceneId): sceneId is PlanetKind {
+  return (
+    sceneId === 'mercury' ||
+    sceneId === 'uranus' ||
+    sceneId === 'pluto' ||
+    sceneId === 'mars'
+  );
+}
+
+/**
+ * Pure frame-delta mobile smooth-scrubbing controller.
+ * Keeps native scroll as target input while damping rendered progress so fast mobile swipes
+ * unfold progressively through focus -> expansion -> portal veil -> 2D world, yet slow scrolling
+ * feels tightly attached and upward direction reversals respond immediately.
+ */
+export function stepMobilePlanetaryScrubState(
+  current: MobilePlanetaryScrubState,
+  targetSceneId: EnvironmentSceneId,
+  targetProgress: number,
+  dtSec: number,
+  reducedMotion: boolean,
+  isDirectFlight = false
+): MobilePlanetaryScrubState {
+  const clampedTarget = clamp01(targetProgress);
+
+  if (reducedMotion || isDirectFlight) {
+    return {
+      sceneId: targetSceneId,
+      progress: Number(clampedTarget.toFixed(4)),
+    };
+  }
+
+  const dt = Math.max(0.001, Math.min(0.05, dtSec));
+  let activeProgress = clamp01(current.progress);
+
+  // Handle cross-scene transitions cleanly without teleporting past a chapter's portal
+  if (current.sceneId !== targetSceneId) {
+    const prevOrder = PLANETARY_SCENE_ORDER[current.sceneId] ?? 0;
+    const nextOrder = PLANETARY_SCENE_ORDER[targetSceneId] ?? 0;
+    const movingDownward = nextOrder > prevOrder;
+
+    if (isPlanetChapterScene(targetSceneId)) {
+      if (movingDownward) {
+        // Seed near chapter entry (0) so a rapid swipe sweeps progressively through the full portal
+        activeProgress = clampedTarget <= 0.04 ? clampedTarget : 0;
+      } else {
+        // Reversing upward from a later chapter (e.g., Uranus -> Mercury): stay near the target gallery edge
+        activeProgress = Math.min(1, Math.max(clampedTarget, Math.min(0.92, clampedTarget + 0.06)));
+      }
+    } else {
+      activeProgress = clampedTarget;
+    }
+  }
+
+  const delta = clampedTarget - activeProgress;
+  if (Math.abs(delta) < 0.0008) {
+    return {
+      sceneId: targetSceneId,
+      progress: Number(clampedTarget.toFixed(4)),
+    };
+  }
+
+  const isReversing = delta < 0;
+  const inPortalWindow = activeProgress < 0.34;
+  // Responsive damping (lambda) so slow thumb drags stay 1:1, paired with a portal velocity cap
+  // so fast flicks glide smoothly through intermediate portal layers instead of skipping them.
+  const lambda = isReversing ? 9.5 : 7.8;
+  const expStep = Math.abs(delta) * (1 - Math.exp(-lambda * dt));
+  const maxRatePerSec = isReversing
+    ? 0.78
+    : inPortalWindow
+      ? 0.44
+      : 0.96;
+  const step = Math.min(expStep, maxRatePerSec * dt);
+  const nextProgress = clamp01(activeProgress + Math.sign(delta) * step);
+
+  return {
+    sceneId: targetSceneId,
+    progress: Number(nextProgress.toFixed(4)),
+  };
+}
+
+
