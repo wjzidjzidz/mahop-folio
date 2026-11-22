@@ -8,6 +8,7 @@ import { AboutSection } from './AboutSection';
 import {
   computeAboutRevealState,
   computeMaterialSampleState,
+  computePuzzleTileMaskState,
   getMappedMaterialSwatches,
   smoothStep,
 } from '../../utils/journeyLogic';
@@ -37,8 +38,8 @@ export function MaterialTableSection({
   const reducedMotion = useReducedMotion();
   const isCompact = useIsCompactViewport();
 
-  const useUnifiedScrollChamber =
-    continuousAboutTransition && !reducedMotion && !isCompact;
+  // Keep true 24-cell masked puzzle chamber active across desktop, tablet, and responsive viewports when not reduced-motion
+  const useUnifiedScrollChamber = continuousAboutTransition && !reducedMotion;
 
   useEffect(() => {
     if (!useUnifiedScrollChamber) {
@@ -80,12 +81,12 @@ export function MaterialTableSection({
   );
 
   const boardHeaderOpacity = useUnifiedScrollChamber
-    ? Number((1 - smoothStep(0.28, 0.54, dismantleProgress)).toFixed(3))
+    ? Number((1 - smoothStep(0.18, 0.45, dismantleProgress)).toFixed(3))
     : 1;
 
   const renderSpecimenBoard = (isInteractiveProgress: boolean) => (
     <div
-      className={`w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-14 ${
+      className={`w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 ${
         isInteractiveProgress ? 'h-full flex flex-col justify-center pt-16 pb-6' : ''
       }`}
     >
@@ -101,13 +102,13 @@ export function MaterialTableSection({
           </span>
           <h2
             className={`font-display uppercase tracking-tighter leading-[0.84] text-[#F5F3EF] ${
-              isInteractiveProgress ? 'text-4xl sm:text-5xl lg:text-6xl' : 'text-5xl sm:text-7xl lg:text-8xl'
+              isInteractiveProgress ? 'text-3xl sm:text-5xl lg:text-6xl' : 'text-5xl sm:text-7xl lg:text-8xl'
             }`}
           >
             MATERIAL TABLE
           </h2>
         </div>
-        <p className="font-serif italic text-sm sm:text-base text-[#B8B5B1]">
+        <p className="font-serif italic text-xs sm:text-base text-[#B8B5B1]">
           Click any specimen to inspect plate texture
         </p>
       </div>
@@ -115,9 +116,9 @@ export function MaterialTableSection({
       {/* Unboxed Museum Specimen Board — Strictly 24 Mapped Records */}
       <div
         data-testid="material-table-grid"
-        className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 items-center ${
+        className={`grid grid-cols-4 md:grid-cols-6 items-center ${
           isInteractiveProgress
-            ? 'gap-x-4 gap-y-2.5 sm:gap-x-6 sm:gap-y-3.5'
+            ? 'gap-x-3 gap-y-2 sm:gap-x-6 sm:gap-y-3.5'
             : 'gap-x-4 gap-y-6 sm:gap-x-7 sm:gap-y-8'
         }`}
       >
@@ -141,7 +142,7 @@ export function MaterialTableSection({
               disabled={!visualState.isInteractive}
               tabIndex={visualState.isInteractive ? 0 : -1}
               aria-label={`Inspect ${swatch.label}: ${swatch.textureHint}`}
-              className="group relative flex flex-col items-center text-center focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-4"
+              className="group relative flex flex-col items-center text-center min-h-[44px] focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-4"
               style={{
                 opacity: visualState.opacity,
                 transform: `translate3d(0, ${visualState.translateY}px, 0) scale(${visualState.scale})`,
@@ -151,7 +152,9 @@ export function MaterialTableSection({
               <div
                 className={`w-full flex items-center justify-center p-1 ${
                   isInteractiveProgress
-                    ? 'h-[11vh] max-h-[106px]'
+                    ? isCompact
+                      ? 'h-[9vh] max-h-[76px]'
+                      : 'h-[11vh] max-h-[106px]'
                     : 'h-28 sm:h-36 md:h-44 p-2'
                 }`}
               >
@@ -160,7 +163,7 @@ export function MaterialTableSection({
                   className="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-300 group-hover:scale-[1.06]"
                 />
               </div>
-              <span className="mt-1 font-mono text-[10px] tracking-[0.22em] text-[#B8B5B1]/75 group-hover:text-[#F5F3EF]">
+              <span className="mt-1 font-mono text-[9px] sm:text-[10px] tracking-[0.2em] text-[#B8B5B1]/75 group-hover:text-[#F5F3EF]">
                 {String(index + 1).padStart(2, '0')}
               </span>
             </button>
@@ -171,21 +174,28 @@ export function MaterialTableSection({
   );
 
   if (useUnifiedScrollChamber) {
-    // Unified Pinned Chamber: Swatches dismantle organically while About blooms dead-center behind them
+    // True Masked Puzzle Transition:
+    // Full About rests beneath 24 deterministic opaque puzzle tiles matching the 24 swatch positions.
+    // As each sample leaves, its corresponding puzzle tile opens piece-by-piece via clip-path inset,
+    // reversing identically when scrolling upward.
     return (
       <>
         <section
           ref={stageRef}
           id="material-table"
           data-testid="section-material-table"
-          className="relative w-full bg-black text-[#F5F3EF] min-h-[290vh]"
+          className="relative z-20 w-full bg-black text-[#F5F3EF] min-h-[300vh]"
         >
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-20 z-30 bg-gradient-to-b from-[#09080A] to-transparent"
+          />
           <div className="sticky top-0 h-[100svh] w-full overflow-hidden flex items-center justify-center">
-            {/* Emerging About Layer in Exact Same Viewport */}
+            {/* Layer 1: Authentic About Composition waiting underneath */}
             <div
               className="absolute inset-0 z-10 flex items-center justify-center"
               style={{
-                pointerEvents: aboutRevealState.textOpacity > 0.25 ? 'auto' : 'none',
+                pointerEvents: aboutRevealState.isRevealed ? 'auto' : 'none',
               }}
             >
               <AboutSection
@@ -194,11 +204,38 @@ export function MaterialTableSection({
               />
             </div>
 
-            {/* Foreground 24-Swatch Specimen Board Dismantling Progressively */}
+            {/* Layer 2: Deterministic 24-Tile Puzzle Curtain Mask over About */}
+            <div
+              aria-hidden="true"
+              data-testid="about-puzzle-mask-grid"
+              className="pointer-events-none absolute inset-0 z-15 grid grid-cols-4 md:grid-cols-6 grid-rows-6 md:grid-rows-4"
+            >
+              {mappedSwatches.map((sw, idx) => {
+                const tile = computePuzzleTileMaskState(
+                  idx,
+                  mappedSwatches.length,
+                  dismantleProgress,
+                  false
+                );
+                return (
+                  <div
+                    key={sw.id}
+                    data-puzzle-tile={String(idx + 1).padStart(2, '0')}
+                    className="w-full h-full bg-black"
+                    style={{
+                      opacity: tile.veilOpacity,
+                      clipPath: `inset(${tile.insetPercent}% ${tile.insetPercent}% ${tile.insetPercent}% ${tile.insetPercent}%)`,
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Layer 3: Foreground 24-Swatch Specimen Board Dismantling Organically */}
             <div
               className="relative z-20 w-full h-full"
               style={{
-                pointerEvents: dismantleProgress > 0.8 ? 'none' : 'auto',
+                pointerEvents: dismantleProgress > 0.78 ? 'none' : 'auto',
               }}
             >
               {renderSpecimenBoard(true)}
@@ -221,8 +258,8 @@ export function MaterialTableSection({
         ref={stageRef}
         id="material-table"
         data-testid="section-material-table"
-        className={`relative w-full bg-black text-[#F5F3EF] ${
-          continuousAboutTransition ? 'pt-20 pb-10' : 'pt-28 sm:pt-36 pb-28 sm:pb-36'
+        className={`relative z-20 w-full text-[#F5F3EF] ${
+          continuousAboutTransition ? 'bg-black pt-20 pb-10' : 'bg-transparent pt-28 sm:pt-36 pb-28 sm:pb-36'
         }`}
       >
         {renderSpecimenBoard(false)}

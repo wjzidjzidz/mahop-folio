@@ -10,7 +10,7 @@ export function WorkIndexPage() {
   const aurora = PROJECTS.aurora;
 
   return (
-    <div className="w-full bg-black text-[#F5F3EF] pt-28 sm:pt-36">
+    <div className="relative z-10 w-full bg-transparent text-[#F5F3EF] pt-28 sm:pt-36">
       {/* Unboxed Gallery Opening */}
       <header className="px-5 sm:px-10 lg:px-16 pb-16 sm:pb-24 max-w-[1440px] mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-8">
         <div>
@@ -28,7 +28,7 @@ export function WorkIndexPage() {
           </p>
           <Link
             href="/material"
-            className="editorial-link inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.26em] uppercase text-[#B8B5B1] hover:text-[#F5F3EF]"
+            className="editorial-link min-h-[44px] inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.26em] uppercase text-[#B8B5B1] hover:text-[#F5F3EF]"
           >
             <span>Explore Material Table (24 Swatches)</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -41,7 +41,7 @@ export function WorkIndexPage() {
         className="relative w-full py-20 sm:py-28 px-5 sm:px-10 lg:px-16 overflow-hidden"
         style={{
           background:
-            'radial-gradient(circle at 72% 45%, rgba(149,191,188,0.16) 0%, rgba(232,127,62,0.08) 38%, rgba(0,0,0,1) 76%)',
+            'radial-gradient(circle at 72% 45%, rgba(149,191,188,0.16) 0%, rgba(232,127,62,0.08) 38%, rgba(0,0,0,0.68) 76%)',
         }}
       >
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
@@ -52,7 +52,7 @@ export function WorkIndexPage() {
             <h2 className="font-display uppercase tracking-tighter text-5xl sm:text-7xl lg:text-8xl leading-[0.86]">
               <Link
                 href={letoile.slug}
-                className="hover:opacity-80 transition-opacity focus-visible:outline-2 focus-visible:outline-[#F5F3EF]"
+                className="min-h-[44px] inline-block hover:opacity-80 transition-opacity focus-visible:outline-2 focus-visible:outline-[#F5F3EF]"
               >
                 {letoile.title}
               </Link>
@@ -70,7 +70,7 @@ export function WorkIndexPage() {
             <div className="pt-2">
               <Link
                 href={letoile.slug}
-                className="editorial-link inline-flex items-center gap-2 font-mono text-xs tracking-[0.26em] uppercase text-[#F5F3EF]"
+                className="editorial-link min-h-[44px] inline-flex items-center gap-2 font-mono text-xs tracking-[0.26em] uppercase text-[#F5F3EF]"
               >
                 <span>Enter L'ETOILE MAHO</span>
                 <ArrowUpRight className="w-4 h-4" />
@@ -123,7 +123,7 @@ export function WorkIndexPage() {
             <h2 className="font-display uppercase tracking-tighter text-6xl sm:text-8xl leading-[0.84] text-black">
               <Link
                 href={mahp.slug}
-                className="hover:opacity-75 transition-opacity focus-visible:outline-2 focus-visible:outline-black"
+                className="min-h-[44px] inline-block hover:opacity-75 transition-opacity focus-visible:outline-2 focus-visible:outline-black"
               >
                 {mahp.displayTitle}
               </Link>
@@ -147,7 +147,7 @@ export function WorkIndexPage() {
             <div className="pt-2">
               <Link
                 href={mahp.slug}
-                className="editorial-link inline-flex items-center gap-2 font-mono text-xs tracking-[0.26em] uppercase text-black"
+                className="editorial-link min-h-[44px] inline-flex items-center gap-2 font-mono text-xs tracking-[0.26em] uppercase text-black"
               >
                 <span>Enter MAH★P</span>
                 <ArrowUpRight className="w-4 h-4" />
@@ -162,18 +162,18 @@ export function WorkIndexPage() {
         className="relative w-full py-20 sm:py-28 px-5 sm:px-10 lg:px-16 overflow-hidden"
         style={{
           background:
-            'radial-gradient(circle at 28% 50%, rgba(124,17,184,0.22) 0%, rgba(123,0,0,0.16) 40%, rgba(0,0,0,1) 78%)',
+            'radial-gradient(circle at 28% 50%, rgba(124,17,184,0.2) 0%, rgba(123,0,0,0.18) 40%, rgba(9,8,10,0.92) 78%)',
         }}
       >
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           <div className="lg:col-span-5 space-y-6">
-            <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#C48CE9] block">
+            <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#C9A24D] block">
               World III · {aurora.sourcePages}
             </span>
             <h2 className="font-display uppercase tracking-tighter text-4xl sm:text-6xl lg:text-7xl leading-[0.88]">
               <Link
                 href={aurora.slug}
-                className="hover:opacity-80 transition-opacity focus-visible:outline-2 focus-visible:outline-[#F5F3EF]"
+                className="min-h-[44px] inline-block hover:opacity-80 transition-opacity focus-visible:outline-2 focus-visible:outline-[#F5F3EF]"
               >
                 {aurora.displayTitle}
               </Link>
@@ -191,7 +191,7 @@ export function WorkIndexPage() {
             <div className="pt-2">
               <Link
                 href={aurora.slug}
-                className="editorial-link inline-flex items-center gap-2 font-mono text-xs tracking-[0.26em] uppercase text-[#F5F3EF]"
+                className="editorial-link min-h-[44px] inline-flex items-center gap-2 font-mono text-xs tracking-[0.26em] uppercase text-[#F5F3EF]"
               >
                 <span>Enter AURORA</span>
                 <ArrowUpRight className="w-4 h-4" />

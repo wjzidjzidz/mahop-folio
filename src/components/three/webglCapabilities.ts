@@ -143,37 +143,56 @@ export function createPlanetTextures(
   let ringMap: THREE.CanvasTexture | undefined;
 
   if (planet === 'uranus') {
-    // Soft banded cyan/turquoise icy cloud currents + faint polar vortex
-    for (let i = 0; i < 38; i++) {
+    // Rich atmospheric zonal bands + pale cyan methane jet swirls
+    for (let i = 0; i < 48; i++) {
       const y = rand() * size;
-      const h = 4 + rand() * 26;
+      const h = 4 + rand() * 24;
       cCtx.fillStyle =
-        rand() > 0.45 ? 'rgba(218, 246, 244, 0.16)' : 'rgba(54, 102, 108, 0.16)';
+        rand() > 0.44 ? 'rgba(222, 249, 247, 0.18)' : 'rgba(38, 86, 94, 0.19)';
       cCtx.fillRect(0, y, size, h);
-      bCtx.fillStyle = rand() > 0.5 ? 'rgba(205,205,205,0.08)' : 'rgba(95,95,95,0.08)';
+      bCtx.fillStyle = rand() > 0.5 ? 'rgba(205,205,205,0.09)' : 'rgba(90,90,90,0.09)';
       bCtx.fillRect(0, y, size, h);
     }
+    // Delicate storm vortex ovals
+    for (let v = 0; v < 8; v++) {
+      const vx = rand() * size;
+      const vy = size * (0.2 + rand() * 0.6);
+      const rx = 18 + rand() * 34;
+      const ry = 5 + rand() * 9;
+      const swirl = cCtx.createRadialGradient(vx, vy, 2, vx, vy, rx);
+      swirl.addColorStop(0, 'rgba(240, 255, 254, 0.28)');
+      swirl.addColorStop(1, 'rgba(149, 191, 188, 0)');
+      cCtx.fillStyle = swirl;
+      cCtx.save();
+      cCtx.translate(vx, vy);
+      cCtx.scale(1, ry / rx);
+      cCtx.beginPath();
+      cCtx.arc(0, 0, rx, 0, Math.PI * 2);
+      cCtx.fill();
+      cCtx.restore();
+    }
 
-    // Ring gradient map
+    // Multi-layered crisp icy ring gradient map
     const ringCanvas = document.createElement('canvas');
-    ringCanvas.width = 256;
+    ringCanvas.width = 512;
     ringCanvas.height = 32;
     const rgCtx = ringCanvas.getContext('2d')!;
-    const rg = rgCtx.createLinearGradient(0, 0, 256, 0);
+    const rg = rgCtx.createLinearGradient(0, 0, 512, 0);
     rg.addColorStop(0, 'rgba(149,191,188,0)');
-    rg.addColorStop(0.18, 'rgba(174,213,210,0.45)');
-    rg.addColorStop(0.32, 'rgba(149,191,188,0.12)');
-    rg.addColorStop(0.48, 'rgba(215,244,242,0.58)');
-    rg.addColorStop(0.68, 'rgba(149,191,188,0.18)');
-    rg.addColorStop(0.85, 'rgba(174,213,210,0.42)');
+    rg.addColorStop(0.14, 'rgba(174,213,210,0.52)');
+    rg.addColorStop(0.24, 'rgba(149,191,188,0.12)');
+    rg.addColorStop(0.38, 'rgba(218,248,246,0.72)');
+    rg.addColorStop(0.52, 'rgba(120,175,180,0.16)');
+    rg.addColorStop(0.68, 'rgba(202,238,236,0.62)');
+    rg.addColorStop(0.84, 'rgba(174,213,210,0.34)');
     rg.addColorStop(1, 'rgba(149,191,188,0)');
     rgCtx.fillStyle = rg;
-    rgCtx.fillRect(0, 0, 256, 32);
+    rgCtx.fillRect(0, 0, 512, 32);
     ringMap = new THREE.CanvasTexture(ringCanvas);
     ringMap.colorSpace = THREE.SRGBColorSpace;
   } else {
     // Mineral / rocky texture speckling
-    const speckCount = planet === 'pluto' ? 500 : 720;
+    const speckCount = planet === 'pluto' ? 620 : 840;
     for (let i = 0; i < speckCount; i++) {
       const x = rand() * size;
       const y = rand() * size;
@@ -182,19 +201,19 @@ export function createPlanetTextures(
 
       if (planet === 'mercury') {
         cCtx.fillStyle = bright
-          ? `rgba(218, 214, 212, ${0.08 + rand() * 0.16})`
-          : `rgba(28, 26, 26, ${0.08 + rand() * 0.18})`;
-        rCtx.fillStyle = bright ? 'rgba(65,65,65,0.28)' : 'rgba(190,190,190,0.22)';
+          ? `rgba(228, 222, 218, ${0.1 + rand() * 0.18})`
+          : `rgba(24, 22, 22, ${0.1 + rand() * 0.2})`;
+        rCtx.fillStyle = bright ? 'rgba(55,55,55,0.3)' : 'rgba(195,195,195,0.24)';
       } else if (planet === 'pluto') {
         cCtx.fillStyle = bright
-          ? `rgba(176, 186, 198, ${0.08 + rand() * 0.16})`
-          : `rgba(16, 17, 20, ${0.12 + rand() * 0.22})`;
-        rCtx.fillStyle = bright ? 'rgba(95,95,95,0.24)' : 'rgba(225,225,225,0.22)';
+          ? `rgba(182, 194, 208, ${0.1 + rand() * 0.18})`
+          : `rgba(14, 15, 19, ${0.14 + rand() * 0.24})`;
+        rCtx.fillStyle = bright ? 'rgba(85,85,85,0.28)' : 'rgba(225,225,225,0.22)';
       } else {
         cCtx.fillStyle = bright
-          ? `rgba(246, 162, 98, ${0.08 + rand() * 0.18})`
-          : `rgba(60, 16, 8, ${0.1 + rand() * 0.22})`;
-        rCtx.fillStyle = 'rgba(180,180,180,0.22)';
+          ? `rgba(248, 168, 102, ${0.1 + rand() * 0.2})`
+          : `rgba(56, 14, 7, ${0.12 + rand() * 0.24})`;
+        rCtx.fillStyle = 'rgba(185,185,185,0.22)';
       }
 
       cCtx.beginPath();
@@ -206,45 +225,58 @@ export function createPlanetTextures(
       rCtx.fill();
 
       bCtx.fillStyle = bright
-        ? `rgba(218,218,218,${0.12 + rand() * 0.18})`
-        : `rgba(42,42,42,${0.14 + rand() * 0.22})`;
+        ? `rgba(222,222,222,${0.14 + rand() * 0.2})`
+        : `rgba(38,38,38,${0.16 + rand() * 0.24})`;
       bCtx.beginPath();
       bCtx.arc(x, y, r, 0, Math.PI * 2);
       bCtx.fill();
     }
 
-    // Impact craters & mineral rays
-    const craterCount = planet === 'mercury' ? 68 : planet === 'mars' ? 42 : 34;
+    // Impact craters & bright ejecta rays
+    const craterCount = planet === 'mercury' ? 76 : planet === 'mars' ? 46 : 38;
     for (let i = 0; i < craterCount; i++) {
       const x = rand() * size;
       const y = rand() * size;
       const r = 6 + rand() * 26;
 
+      if (planet === 'mercury' && i % 5 === 0) {
+        // Radial mineral ejecta ray burst around major Mercury craters
+        cCtx.strokeStyle = 'rgba(236, 232, 228, 0.14)';
+        cCtx.lineWidth = 1;
+        for (let ray = 0; ray < 8; ray++) {
+          const ang = (ray / 8) * Math.PI * 2 + rand() * 0.4;
+          cCtx.beginPath();
+          cCtx.moveTo(x + Math.cos(ang) * r, y + Math.sin(ang) * r);
+          cCtx.lineTo(x + Math.cos(ang) * r * (2.2 + rand()), y + Math.sin(ang) * r * (2.2 + rand()));
+          cCtx.stroke();
+        }
+      }
+
       cCtx.strokeStyle =
-        planet === 'mercury' ? 'rgba(232,228,225,0.22)' : 'rgba(255,255,255,0.10)';
+        planet === 'mercury' ? 'rgba(235,230,226,0.26)' : 'rgba(255,255,255,0.12)';
       cCtx.lineWidth = 1.6;
       cCtx.beginPath();
       cCtx.arc(x, y, r, 0, Math.PI * 2);
       cCtx.stroke();
 
-      cCtx.fillStyle = 'rgba(12,10,12,0.28)';
+      cCtx.fillStyle = 'rgba(12,10,12,0.3)';
       cCtx.beginPath();
       cCtx.arc(x + 1.5, y + 1.5, r * 0.7, 0, Math.PI * 2);
       cCtx.fill();
 
-      bCtx.strokeStyle = 'rgba(245,245,245,0.58)';
+      bCtx.strokeStyle = 'rgba(248,248,248,0.62)';
       bCtx.lineWidth = 2.2;
       bCtx.beginPath();
       bCtx.arc(x, y, r, 0, Math.PI * 2);
       bCtx.stroke();
 
-      bCtx.fillStyle = 'rgba(25,25,25,0.62)';
+      bCtx.fillStyle = 'rgba(22,22,22,0.65)';
       bCtx.beginPath();
       bCtx.arc(x, y, r * 0.7, 0, Math.PI * 2);
       bCtx.fill();
     }
 
-    // Mars glowing volcanic magma tectonic fissures
+    // Mars deep rift canyons + glowing volcanic magma tectonic fissures
     if (planet === 'mars') {
       const emCanvas = document.createElement('canvas');
       emCanvas.width = size;
@@ -253,10 +285,10 @@ export function createPlanetTextures(
       eCtx.fillStyle = '#000000';
       eCtx.fillRect(0, 0, size, size);
 
-      for (let v = 0; v < 18; v++) {
+      for (let v = 0; v < 20; v++) {
         let px = rand() * size;
         let py = rand() * size;
-        eCtx.strokeStyle = v % 2 === 0 ? 'rgba(255, 118, 42, 0.72)' : 'rgba(210, 48, 12, 0.62)';
+        eCtx.strokeStyle = v % 2 === 0 ? 'rgba(255, 118, 42, 0.74)' : 'rgba(210, 48, 12, 0.62)';
         eCtx.lineWidth = 1.2 + rand() * 2.2;
         eCtx.beginPath();
         eCtx.moveTo(px, py);
@@ -273,15 +305,15 @@ export function createPlanetTextures(
       emissiveMap.anisotropy = maxAnisotropy;
     }
 
-    // Pluto nitrogen frost heart/basins
+    // Pluto nitrogen frost heart/basins & cryo-ridges
     if (planet === 'pluto') {
-      for (let p = 0; p < 5; p++) {
-        const fx = size * (0.2 + rand() * 0.6);
-        const fy = size * (0.25 + rand() * 0.5);
-        const fr = 28 + rand() * 52;
+      for (let p = 0; p < 6; p++) {
+        const fx = size * (0.18 + rand() * 0.64);
+        const fy = size * (0.22 + rand() * 0.56);
+        const fr = 28 + rand() * 54;
         const frost = cCtx.createRadialGradient(fx, fy, 4, fx, fy, fr);
-        frost.addColorStop(0, 'rgba(188, 198, 210, 0.36)');
-        frost.addColorStop(1, 'rgba(188, 198, 210, 0)');
+        frost.addColorStop(0, 'rgba(196, 210, 224, 0.42)');
+        frost.addColorStop(1, 'rgba(196, 210, 224, 0)');
         cCtx.fillStyle = frost;
         cCtx.fillRect(0, 0, size, size);
       }

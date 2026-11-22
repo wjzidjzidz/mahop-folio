@@ -4,42 +4,71 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { PortfolioImage } from '../PortfolioImage';
 import { PORTFOLIO_ASSETS } from '../../data/portfolioAssets';
 import { PROJECTS } from '../../data/content';
-import { ProjectEnvironmentHost } from '../three/ProjectEnvironmentHost';
-import {
-  computeChapterStageMetrics,
-  PROJECT_ENVIRONMENTS,
-  type EnvironmentSceneId,
-} from '../../utils/journeyLogic';
+import { useExhibitionStage } from '../../context/ExhibitionStageContext';
+import { WhiteCollageBackdrop } from '../environments/WhiteCollageBackdrop';
+import { BotanicalGroundBackdrop } from '../environments/BotanicalGroundBackdrop';
+import { PROJECT_ENVIRONMENTS } from '../../utils/journeyLogic';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface MahStarPSectionProps {
-  standaloneStage?: boolean;
   showHeader?: boolean;
-  onEnvironmentChange?: (sceneId: EnvironmentSceneId, progress: number) => void;
 }
 
-export function MahStarPSection({
-  standaloneStage = false,
-  showHeader = true,
-  onEnvironmentChange,
-}: MahStarPSectionProps) {
+export function MahStarPSection({ showHeader = true }: MahStarPSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
+  const actOneRef = useRef<HTMLDivElement>(null);
   const actTwoRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
+  const { setEnvironmentState } = useExhibitionStage();
   const project = PROJECTS.mahp;
 
+  const [whiteProgress, setWhiteProgress] = useState(0);
   const [natureProgress, setNatureProgress] = useState(0);
-  const metrics = computeChapterStageMetrics(natureProgress, reducedMotion);
 
   useEffect(() => {
+    const actOne = actOneRef.current;
     const actTwo = actTwoRef.current;
-    if (!actTwo) return;
+    if (!actOne || !actTwo) return;
 
     const ctx = gsap.context(() => {
+      // ACT I: Pure 2D Fluorescent Green / Black / White stage — pause & hide WebGL
+      ScrollTrigger.create({
+        trigger: actOne,
+        start: 'top 62%',
+        end: 'bottom 38%',
+        scrub: true,
+        onEnter: () => {
+          setEnvironmentState('white-collage', 0.05, 0, 0);
+          window.dispatchEvent(
+            new CustomEvent('mahop:scene-accent', {
+              detail: PROJECT_ENVIRONMENTS['white-collage'].accentHex,
+            })
+          );
+        },
+        onEnterBack: () => {
+          setEnvironmentState('white-collage', 0.92, 0, 0);
+          window.dispatchEvent(
+            new CustomEvent('mahop:scene-accent', {
+              detail: PROJECT_ENVIRONMENTS['white-collage'].accentHex,
+            })
+          );
+        },
+        onToggle: (self) => {
+          if (self.isActive) {
+            setEnvironmentState('white-collage', self.progress, 0, 0);
+          }
+        },
+        onUpdate: (self) => {
+          setWhiteProgress(self.progress);
+          if (self.isActive) {
+            setEnvironmentState('white-collage', self.progress, 0, 0);
+          }
+        },
+      });
+
       if (!reducedMotion) {
-        // Gentle scale + vertical breath on the two massive white collage plates
         gsap.fromTo(
           '[data-mahp-white-plate="first"]',
           { y: 36, scale: 0.97 },
@@ -73,47 +102,34 @@ export function MahStarPSection({
         );
       }
 
+      // ACT II: Pure 2D Deep-Black & Fluorescent-Green Botanical Stage (Zero WebGL)
+      const emitNature = (progress: number) => {
+        setNatureProgress(progress);
+        setEnvironmentState('editorial-nature', progress, 0, 0);
+        window.dispatchEvent(
+          new CustomEvent('mahop:scene-accent', {
+            detail: PROJECT_ENVIRONMENTS['editorial-nature'].accentHex,
+          })
+        );
+      };
+
       ScrollTrigger.create({
         trigger: actTwo,
-        start: 'top 62%',
-        end: 'bottom 38%',
+        start: 'top 72%',
+        end: 'bottom 28%',
         scrub: true,
-        onEnter: () => {
-          onEnvironmentChange?.('editorial-nature', 0.05);
-          window.dispatchEvent(
-            new CustomEvent('mahop:scene-accent', {
-              detail: PROJECT_ENVIRONMENTS['editorial-nature'].accentHex,
-            })
-          );
-        },
-        onEnterBack: () => {
-          onEnvironmentChange?.('editorial-nature', 0.92);
-          window.dispatchEvent(
-            new CustomEvent('mahop:scene-accent', {
-              detail: PROJECT_ENVIRONMENTS['editorial-nature'].accentHex,
-            })
-          );
-        },
+        onEnter: () => emitNature(0.05),
+        onEnterBack: () => emitNature(0.92),
         onToggle: (self) => {
-          if (self.isActive) {
-            onEnvironmentChange?.('editorial-nature', self.progress);
-            window.dispatchEvent(
-              new CustomEvent('mahop:scene-accent', {
-                detail: PROJECT_ENVIRONMENTS['editorial-nature'].accentHex,
-              })
-            );
-          }
+          if (self.isActive) emitNature(self.progress);
         },
         onUpdate: (self) => {
           setNatureProgress(self.progress);
-          if (self.isActive) {
-            onEnvironmentChange?.('editorial-nature', self.progress);
-          }
+          if (self.isActive) emitNature(self.progress);
         },
       });
 
       if (!reducedMotion) {
-        // Horizontal camera sweep across wide trousers close-up
         gsap.fromTo(
           '[data-mahp-photo="hero"]',
           { xPercent: -3, scale: 1.03 },
@@ -149,25 +165,33 @@ export function MahStarPSection({
     }, sectionRef);
 
     return () => ctx.revert();
-  }, [reducedMotion, onEnvironmentChange]);
+  }, [reducedMotion, setEnvironmentState]);
 
   return (
     <section
       ref={sectionRef}
       id="mah-star-p"
       data-testid="section-mah-star-p"
-      className="relative w-full"
+      className="relative z-10 w-full"
     >
-      {/* ACT I — EDGE-TO-EDGE LUMINOUS WHITE COLLAGE VOID */}
+      {/* ACT I — PURE 2D FLUORESCENT GREEN / BLACK / WHITE COLLAGE INTERLUDE (ZERO THREE.JS) */}
       <div
+        ref={actOneRef}
         data-mahp-act="white"
-        className="relative z-20 w-full bg-white text-black py-24 sm:py-32 lg:py-40 px-4 sm:px-8 lg:px-14"
+        className="relative z-20 w-full bg-white text-black pt-28 pb-24 sm:pt-36 sm:pb-32 lg:pt-40 lg:pb-40 px-4 sm:px-8 lg:px-14 overflow-hidden"
       >
-        <div className="max-w-[1440px] mx-auto">
+        {/* Soft nocturnal atmospheric bridge easing Mars into the white paper threshold */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-20 sm:h-28 z-20 bg-gradient-to-b from-black/22 via-black/6 to-transparent"
+        />
+        <WhiteCollageBackdrop scrollProgress={whiteProgress} />
+
+        <div className="relative z-10 max-w-[1440px] mx-auto">
           {showHeader && (
             <div className="mb-16 sm:mb-24 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
               <div>
-                <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-neutral-500 block mb-3">
+                <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-black/65 block mb-3">
                   {project.sourcePages} · White Collage Interlude
                 </span>
                 <h2 className="font-display uppercase tracking-tighter text-[18vw] sm:text-[13vw] lg:text-[10vw] leading-[0.82] text-black">
@@ -179,7 +203,7 @@ export function MahStarPSection({
                 <p className="font-serif italic text-lg sm:text-xl text-neutral-800">
                   Photography {project.credits[0].name} · Model {project.credits[1].name}
                 </p>
-                <p className="font-mono text-[10px] tracking-[0.12em] text-neutral-500">
+                <p className="font-mono text-[10px] tracking-[0.12em] text-neutral-600">
                   {project.creditNote}
                 </p>
               </div>
@@ -204,35 +228,28 @@ export function MahStarPSection({
         </div>
       </div>
 
-      {/* ACT II — BOTANICAL GREEN FIELD & TWO REAL PAGE-22 PHOTOGRAPHS */}
+      {/* ACT II — PURE 2D NOCTURNAL BOTANICAL GROUND & TWO REAL PAGE-22 PHOTOGRAPHS (ZERO THREE.JS) */}
       <div
         ref={actTwoRef}
+        id="mah-editorial-nature"
         data-mahp-act="nature"
-        className="relative w-full text-[#F5F3EF]"
+        data-render-mode="pure-2d"
+        className="relative z-10 w-full bg-[#020402] text-[#F5F3EF] scroll-mt-20 overflow-hidden"
       >
-        {standaloneStage && (
-          <div className="sticky top-0 h-[100svh] w-full pointer-events-none z-0 overflow-hidden">
-            <ProjectEnvironmentHost
-              sceneId="editorial-nature"
-              opacity={metrics.sceneOpacity}
-              scrollProgress={natureProgress}
-            />
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ backgroundColor: `rgba(7,12,6,${metrics.backdropDim * 0.45})` }}
-            />
-          </div>
-        )}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-20 z-20 bg-gradient-to-b from-white/18 to-transparent"
+        />
+        <BotanicalGroundBackdrop scrollProgress={natureProgress} />
 
-        <div className={standaloneStage ? 'relative z-10 -mt-[100svh]' : 'relative z-10'}>
-          {/* Atmospheric Emerald Opening Window */}
+        <div className="relative z-10">
           <div className="min-h-[52svh] sm:min-h-[66svh] flex flex-col justify-end px-5 sm:px-10 lg:px-16 pb-12 sm:pb-16">
             <div className="max-w-7xl mx-auto w-full flex flex-col sm:flex-row sm:items-end justify-between gap-6">
               <div>
-                <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#93BA96] block mb-2">
+                <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#39FF14]/85 block mb-2">
                   Act II · Botanical Ground
                 </span>
-                <h3 className="font-display uppercase tracking-tighter text-5xl sm:text-7xl lg:text-8xl leading-[0.86] text-[#F5F3EF]">
+                <h3 className="font-display uppercase tracking-tighter text-5xl sm:text-7xl lg:text-8xl leading-[0.92] text-[#F5F3EF]">
                   EDITORIAL STUDIO
                   <span className="block">PHOTOGRAPHY</span>
                 </h3>
@@ -252,7 +269,7 @@ export function MahStarPSection({
                 asset={PORTFOLIO_ASSETS.mahp.hero}
                 className="block w-full h-auto object-cover"
               />
-              <p className="mt-4 font-serif italic text-sm sm:text-base text-[#C4DEC6]/85">
+              <p className="mt-4 font-serif italic text-sm sm:text-base text-[#C4DEC6]/90">
                 {project.credits[1].name} — Photographed by {project.credits[0].name}
               </p>
             </div>

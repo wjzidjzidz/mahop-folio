@@ -4,10 +4,22 @@ import { MATERIAL_SWATCHES } from '../data/content';
 import {
   computeAboutRevealState,
   computeChapterStageMetrics,
+  computeContactStarMorph,
   computeHeroGatewayMetrics,
+  computeHeroHorizonRevealMetrics,
+  computeHeroStarDetachState,
+  computeIntroTimelineMetrics,
   computeMaterialSampleState,
+  computePlanetJourneyState,
+  computePlanetWorldPosition,
+  computePuzzleTileMaskState,
+  computeSolarSystemState,
   computeStarCompanionState,
   getMappedMaterialSwatches,
+  sceneUsesWebGL,
+  shouldRenderWebGLHost,
+  SOLAR_PLANET_SPECS,
+  type PlanetKind,
 } from './journeyLogic';
 
 test('getMappedMaterialSwatches returns strictly the 24 mapped items without inventing unresolved records', () => {
@@ -17,84 +29,247 @@ test('getMappedMaterialSwatches returns strictly the 24 mapped items without inv
   assert.ok(mapped.every((item) => item.mappingStatus === 'mapped' && Boolean(item.image)));
 });
 
-test('computeHeroGatewayMetrics smoothly fades wordmark and collages on forward scroll and reverses upward', () => {
+test('sceneUsesWebGL & shouldRenderWebGLHost disable WebGL across EXPLORE menu, archive pages, and 2D worlds', () => {
+  assert.equal(sceneUsesWebGL('gateway'), true);
+  assert.equal(sceneUsesWebGL('white-collage'), false);
+  assert.equal(sceneUsesWebGL('editorial-nature'), false);
+  assert.equal(sceneUsesWebGL('aurora-punk'), false);
+  assert.equal(sceneUsesWebGL('ambient-archive'), false);
+  assert.equal(sceneUsesWebGL('letoile-overview'), true);
+  assert.equal(sceneUsesWebGL('mercury'), true);
+
+  assert.equal(shouldRenderWebGLHost('gateway', false), true);
+  assert.equal(shouldRenderWebGLHost('gateway', true), false);
+  assert.equal(shouldRenderWebGLHost('letoile-overview', true), false);
+  assert.equal(shouldRenderWebGLHost('ambient-archive', false), false);
+});
+
+test('gateway horizon transition connects seamlessly into centered L’Étoile overview and reverses cleanly', () => {
+  const heroStart = computeHeroHorizonRevealMetrics(0, false);
+  const heroMid = computeHeroHorizonRevealMetrics(0.45, false);
+  const heroEnd = computeHeroHorizonRevealMetrics(1, false);
+
+  assert.ok(heroStart.maskStartPercent >= 50);
+  assert.equal(heroStart.maskOpacity, 1);
+  assert.ok(heroMid.maskStartPercent < heroStart.maskStartPercent);
+  assert.equal(heroEnd.maskOpacity, 0);
+
+  const camAtHero = computeSolarSystemState('gateway', 0, false);
+  const camAtEnd = computeSolarSystemState('gateway', 1, false);
+  const overviewStart = computeSolarSystemState('letoile-overview', 0, false);
+
+  assert.ok(camAtHero.lookAt[1] > overviewStart.lookAt[1]);
+  assert.deepEqual(camAtEnd.cameraPosition, overviewStart.cameraPosition);
+  assert.deepEqual(camAtEnd.lookAt, overviewStart.lookAt);
+  assert.equal(camAtEnd.exteriorOpacity, overviewStart.exteriorOpacity);
+});
+
+test('4 planets stay visually distinct and never overlap at any point in their orbital animation', () => {
+  const kinds: PlanetKind[] = ['mercury', 'uranus', 'pluto', 'mars'];
+  const overview = computeSolarSystemState('letoile-overview', 0, false);
+
+  for (let step = 0; step < 64; step++) {
+    const t = step * 2.1;
+    const positions = kinds.map((k) => computePlanetWorldPosition(k, t, null, false));
+    const projected = kinds.map((k, idx) => {
+      const p = positions[idx];
+      const dz = overview.cameraPosition[2] - p[2];
+      const radius = SOLAR_PLANET_SPECS[k].boundingRadius * SOLAR_PLANET_SPECS[k].baseScale;
+      return {
+        k,
+        sx: p[0] / dz,
+        sy: (p[1] - overview.cameraPosition[1]) / dz,
+        sr: radius / dz,
+      };
+    });
+
+    for (let i = 0; i < projected.length; i++) {
+      for (let j = i + 1; j < projected.length; j++) {
+        const a = projected[i];
+        const b = projected[j];
+        const dist = Math.hypot(a.sx - b.sx, a.sy - b.sy);
+        assert.ok(
+          dist > a.sr + b.sr,
+          `Planets ${a.k} and ${b.k} overlapped at t=${t.toFixed(1)} (dist=${dist.toFixed(4)}, sumR=${(a.sr + b.sr).toFixed(4)})`
+        );
+      }
+    }
+  }
+});
+
+test('computeSolarSystemState & computePlanetJourneyState execute controlled ~2.6s planetary portal flight and reverse cleanly', () => {
+  const overview = computeSolarSystemState('letoile-overview', 0, false);
+  assert.equal(overview.focusPlanet, null);
+  assert.equal(overview.exteriorOpacity, 1);
+  assert.equal(overview.interiorWorldOpacity, 0);
+
+  const selection = computePlanetJourneyState(0.2, 2.6);
+  const approach = computePlanetJourneyState(1.0, 2.6);
+  const entry = computePlanetJourneyState(1.75, 2.6);
+  const arrival = computePlanetJourneyState(2.6, 2.6);
+
+  assert.equal(selection.phase, 'selection');
+  assert.equal(approach.phase, 'approach');
+  assert.equal(entry.phase, 'entry');
+  assert.equal(arrival.phase, 'arrival');
+  assert.equal(arrival.isComplete, true);
+
+  const approachingCam = computeSolarSystemState('mars', approach.portalProgress, false);
+  assert.equal(approachingCam.focusPlanet, 'mars');
+  assert.ok(approachingCam.portalApproach > 0.35);
+  assert.ok(approachingCam.planetScales.mars > overview.planetScales.mars);
+
+  const portalCross = computeSolarSystemState('mars', entry.portalProgress, false);
+  assert.ok(portalCross.portalVeilOpacity > 0.15);
+  assert.ok(portalCross.interiorWorldOpacity > 0);
+
+  const insideMarsWorld = computeSolarSystemState('mars', arrival.portalProgress, false);
+  assert.equal(insideMarsWorld.exteriorOpacity, 0);
+  assert.equal(insideMarsWorld.interiorWorldOpacity, 1);
+
+  const reversed = computeSolarSystemState('letoile-overview', 0, false);
+  assert.deepEqual(reversed, overview);
+});
+
+test('computeIntroTimelineMetrics runs clean 3-stage editorial load -> star glow -> seamless Hero handoff', () => {
+  const stage1 = computeIntroTimelineMetrics(0.7, false);
+  assert.equal(stage1.phase, 'writing');
+  assert.ok(stage1.revealedCount >= 2 && stage1.revealedCount < 5);
+  assert.equal(stage1.starGlow, 0);
+  assert.equal(stage1.loaderOpacity, 1);
+
+  const stage2 = computeIntroTimelineMetrics(2.05, false);
+  assert.equal(stage2.phase, 'star-glow');
+  assert.equal(stage2.revealedCount, 5);
+  assert.ok(stage2.starGlow > 0.7);
+  assert.equal(stage2.starSettleT, 1);
+
+  const stage3 = computeIntroTimelineMetrics(3.0, false);
+  assert.equal(stage3.phase, 'hero-handoff');
+  assert.ok(stage3.loaderOpacity > 0 && stage3.loaderOpacity < 1);
+  assert.ok(stage3.heroWordmarkOpacity > 0 && stage3.heroWordmarkOpacity < 1);
+
+  const stage4 = computeIntroTimelineMetrics(3.7, false);
+  assert.equal(stage4.phase, 'settled');
+  assert.equal(stage4.loaderOpacity, 0);
+  assert.equal(stage4.heroWordmarkOpacity, 1);
+  assert.equal(stage4.isComplete, true);
+});
+
+test('computeHeroGatewayMetrics & computeHeroStarDetachState detach Hero star downward and reverse smoothly', () => {
+  const docked = computeHeroStarDetachState(0, false);
+  assert.equal(docked.isDockedInHero, true);
+  assert.equal(docked.lettersOpacity, 1);
+  assert.equal(docked.arcOffsetY, 0);
+
+  const midDetach = computeHeroStarDetachState(0.45, false);
+  assert.equal(midDetach.isDockedInHero, false);
+  assert.ok(midDetach.lettersOpacity < 0.7);
+  assert.ok(midDetach.arcOffsetY > 15);
+
+  const fullyDetached = computeHeroStarDetachState(1, false);
+  assert.equal(fullyDetached.lettersOpacity, 0);
+  assert.equal(fullyDetached.subtitleOpacity, 0);
+
   const start = computeHeroGatewayMetrics(0, false);
   const end = computeHeroGatewayMetrics(0.95, false);
   assert.equal(start.wordmarkOpacity, 1);
-  assert.ok(end.wordmarkOpacity < 0.15);
-  assert.ok(end.wordmarkScale > start.wordmarkScale);
+  assert.equal(end.wordmarkOpacity, 0);
 
-  const reduced = computeHeroGatewayMetrics(0.8, true);
-  assert.equal(reduced.wordmarkOpacity, 1);
-  assert.equal(reduced.wordmarkScale, 1);
+  const reduced = computeHeroStarDetachState(0.8, true);
+  assert.equal(reduced.isDockedInHero, true);
+  assert.equal(reduced.lettersOpacity, 1);
 });
 
-test('computeChapterStageMetrics recedes scene opacity as photographs take foreground and reverses cleanly', () => {
-  const entry = computeChapterStageMetrics(0.08, false);
-  const foreground = computeChapterStageMetrics(0.72, false);
+test('computeChapterStageMetrics keeps chapter entry & portal clean with zero dark dim and recedes for foreground photos', () => {
+  const entry = computeChapterStageMetrics(0.18, false);
+  const portalEnd = computeChapterStageMetrics(0.50, false);
+  const foreground = computeChapterStageMetrics(0.80, false);
   const settled = computeChapterStageMetrics(0.95, false);
 
   assert.equal(entry.chapterPhase, 'entering');
+  assert.equal(entry.backdropDim, 0);
+  assert.equal(portalEnd.backdropDim, 0);
+  assert.ok(portalEnd.titleOpacity > 0.9);
   assert.ok(entry.sceneOpacity > foreground.sceneOpacity);
-  assert.ok(foreground.sceneOpacity < 0.35);
-  assert.ok(settled.sceneOpacity >= 0.14);
+  assert.ok(foreground.sceneOpacity < 0.5);
+  assert.ok(settled.sceneOpacity >= 0.16);
 
-  const reversedEntry = computeChapterStageMetrics(0.08, false);
+  const reversedEntry = computeChapterStageMetrics(0.18, false);
   assert.deepEqual(reversedEntry, entry);
 });
 
-test('computeMaterialSampleState dismantles samples staggered across progress and restores on reverse scroll', () => {
+test('computeMaterialSampleState and computePuzzleTileMaskState synchronize piece-by-piece About reveal', () => {
   const startStates = Array.from({ length: 24 }, (_, idx) =>
     computeMaterialSampleState(idx, 24, 0, false)
   );
   assert.ok(startStates.every((s) => s.opacity === 1 && s.isInteractive));
 
-  const midStates = Array.from({ length: 24 }, (_, idx) =>
+  const startTiles = Array.from({ length: 24 }, (_, idx) =>
+    computePuzzleTileMaskState(idx, 24, 0, false)
+  );
+  assert.ok(startTiles.every((t) => t.veilOpacity === 1 && t.revealProgress === 0));
+
+  const midSamples = Array.from({ length: 24 }, (_, idx) =>
     computeMaterialSampleState(idx, 24, 0.5, false)
   );
-  const visibleCount = midStates.filter((s) => s.opacity > 0.85).length;
-  const fadedCount = midStates.filter((s) => s.opacity < 0.15).length;
-  assert.ok(visibleCount > 0 && visibleCount < 24);
-  assert.ok(fadedCount > 0 && fadedCount < 24);
-
-  const endStates = Array.from({ length: 24 }, (_, idx) =>
-    computeMaterialSampleState(idx, 24, 0.96, false)
+  const midTiles = Array.from({ length: 24 }, (_, idx) =>
+    computePuzzleTileMaskState(idx, 24, 0.5, false)
   );
-  assert.ok(endStates.every((s) => s.opacity === 0 && !s.isInteractive));
+  const openCount = midTiles.filter((t) => t.revealProgress > 0.7).length;
+  const closedCount = midTiles.filter((t) => t.revealProgress < 0.15).length;
+  assert.ok(openCount > 0 && openCount < 24);
+  assert.ok(closedCount > 0 && closedCount < 24);
+  assert.ok(midSamples[0].opacity === 0 && midTiles[0].revealProgress === 1);
 
-  const reducedMid = computeMaterialSampleState(0, 24, 0.75, true);
-  assert.equal(reducedMid.opacity, 1);
+  const endTiles = Array.from({ length: 24 }, (_, idx) =>
+    computePuzzleTileMaskState(idx, 24, 0.96, false)
+  );
+  assert.ok(endTiles.every((t) => t.veilOpacity === 0 && t.revealProgress === 1));
+
+  const reducedTile = computePuzzleTileMaskState(0, 24, 0.5, true);
+  assert.equal(reducedTile.veilOpacity, 0);
+  assert.equal(reducedTile.revealProgress, 1);
 });
 
-test('computeAboutRevealState stays subtle until late Material progress unless immediateReveal or reducedMotion', () => {
-  const early = computeAboutRevealState(0.25, false, false);
-  assert.equal(early.headingOpacity, 0);
-  assert.equal(early.illustrationOpacity, 0);
-  assert.equal(early.textOpacity, 0);
-  assert.equal(early.isRevealed, false);
-
-  const overlapping = computeAboutRevealState(0.75, false, false);
-  assert.ok(overlapping.headingOpacity > 0.5);
-  assert.ok(overlapping.illustrationOpacity > 0);
+test('computeAboutRevealState supports puzzle curtain presence and immediateReveal', () => {
+  const mid = computeAboutRevealState(0.45, false, false);
+  assert.equal(mid.headingOpacity, 1);
+  assert.equal(mid.illustrationOpacity, 1);
+  assert.equal(mid.isRevealed, false);
 
   const late = computeAboutRevealState(0.95, false, false);
   assert.equal(late.headingOpacity, 1);
-  assert.equal(late.illustrationOpacity, 1);
   assert.equal(late.textOpacity, 1);
   assert.equal(late.isRevealed, true);
 
   const immediate = computeAboutRevealState(0, false, true);
   assert.equal(immediate.headingOpacity, 1);
-  assert.equal(immediate.illustrationOpacity, 1);
   assert.equal(immediate.textOpacity, 1);
+  assert.equal(immediate.isRevealed, true);
 });
 
-test('computeStarCompanionState keeps star in quiet gutter during scroll and centers inside white footer', () => {
-  const mid = computeStarCompanionState(0.45, false, false);
-  assert.ok(mid.xPercent >= 93);
-  assert.equal(mid.settledInFooter, false);
+test('computeStarCompanionState and computeContactStarMorph transform cleanly without duplicate stars', () => {
+  const slow = computeStarCompanionState(0.45, false, false, 0, 1);
+  const fast = computeStarCompanionState(0.45, false, false, 1200, 1);
+  assert.ok(fast.scale > slow.scale);
+  assert.ok(fast.trailSpreadPx > slow.trailSpreadPx);
+  assert.equal(slow.settledInFooter, false);
 
-  const docked = computeStarCompanionState(1, true, false);
+  const docked = computeStarCompanionState(1, true, false, 400, 1);
   assert.equal(docked.xPercent, 50);
+  assert.equal(docked.yPercent, 50);
+  assert.equal(docked.rotationDeg, 0);
   assert.equal(docked.settledInFooter, true);
+
+  const approaching = computeContactStarMorph(true, 140, 280, 44, 24);
+  assert.ok(approaching.morphT > 0 && approaching.morphT < 1);
+  assert.ok(approaching.targetScaleMultiplier > 1);
+  assert.equal(approaching.dockEmblemVisible, false);
+  assert.equal(approaching.companionVisible, true);
+
+  const landed = computeContactStarMorph(true, 0.8, 280, 44, 24);
+  assert.equal(landed.dockEmblemVisible, true);
+  assert.equal(landed.companionVisible, false);
+  assert.equal(landed.inkMix, 1);
 });

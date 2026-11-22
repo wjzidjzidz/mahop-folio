@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 interface RouterContextType {
   currentPath: string;
@@ -14,34 +15,78 @@ export function useRouter() {
   return useContext(RouterContext);
 }
 
+function normalizeRoutePath(path: string): string {
+  if (!path) return '/';
+  return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
+}
+
 export function RouterProvider({ children }: { children: React.ReactNode }) {
   const [currentPath, setCurrentPath] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      return window.location.pathname || '/';
+      return normalizeRoutePath(window.location.pathname || '/');
     }
     return '/';
   });
 
+  const navigationActionRef = useRef<'push' | 'pop' | 'init'>('init');
+
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPath(window.location.pathname || '/');
+      navigationActionRef.current = 'pop';
+      setCurrentPath(normalizeRoutePath(window.location.pathname || '/'));
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Run scroll reset, body overflow cleanup, and ScrollTrigger sync AFTER React commits the new route DOM
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    document.body.style.overflow = '';
+
+    if (navigationActionRef.current === 'push') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    navigationActionRef.current = 'init';
+
+    window.dispatchEvent(
+      new CustomEvent('mahop:route-change', { detail: currentPath })
+    );
+
+    const raf1 = window.requestAnimationFrame(() => {
+      ScrollTrigger.refresh(true);
+      window.dispatchEvent(
+        new CustomEvent('mahop:route-change', { detail: currentPath })
+      );
+    });
+    const timer = window.setTimeout(() => {
+      ScrollTrigger.refresh(true);
+      window.dispatchEvent(
+        new CustomEvent('mahop:route-change', { detail: currentPath })
+      );
+    }, 220);
+
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      window.clearTimeout(timer);
+    };
+  }, [currentPath]);
+
   const navigate = (to: string) => {
-    const cleanTo = to.length > 1 && to.endsWith('/') ? to.slice(0, -1) : to;
-    const cleanCurrent = currentPath.length > 1 && currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath;
+    document.body.style.overflow = '';
+    const cleanTo = normalizeRoutePath(to);
+    const cleanCurrent = normalizeRoutePath(currentPath);
 
     if (cleanTo === cleanCurrent) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+
+    navigationActionRef.current = 'push';
     window.history.pushState({}, '', cleanTo);
     setCurrentPath(cleanTo);
-    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   return (
@@ -67,13 +112,11 @@ export function Link({
   ...props
 }: LinkProps) {
   const { currentPath, navigate } = useRouter();
-  const isActive = currentPath === href;
+  const isActive = normalizeRoutePath(currentPath) === normalizeRoutePath(href);
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Execute caller's onClick callback first (e.g., closing mobile menu)
     onClick?.(e);
 
-    // Allow external links, modifier clicks, anchor jumps, or events where default was prevented
     if (
       e.defaultPrevented ||
       props.target === '_blank' ||

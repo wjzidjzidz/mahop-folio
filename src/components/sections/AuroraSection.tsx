@@ -4,46 +4,38 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { PortfolioImage } from '../PortfolioImage';
 import { PORTFOLIO_ASSETS } from '../../data/portfolioAssets';
 import { PROJECTS } from '../../data/content';
-import { ProjectEnvironmentHost } from '../three/ProjectEnvironmentHost';
-import {
-  computeChapterStageMetrics,
-  PROJECT_ENVIRONMENTS,
-  type EnvironmentSceneId,
-} from '../../utils/journeyLogic';
+import { useExhibitionStage } from '../../context/ExhibitionStageContext';
+import { AuroraPunkBackdrop } from '../environments/AuroraPunkBackdrop';
+import { PROJECT_ENVIRONMENTS } from '../../utils/journeyLogic';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface AuroraSectionProps {
-  standaloneStage?: boolean;
   showHeader?: boolean;
-  onEnvironmentChange?: (sceneId: EnvironmentSceneId, progress: number) => void;
 }
 
-export function AuroraSection({
-  standaloneStage = false,
-  showHeader = true,
-  onEnvironmentChange,
-}: AuroraSectionProps) {
+export function AuroraSection({ showHeader = true }: AuroraSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const reducedMotion = useReducedMotion();
+  const { setEnvironmentState } = useExhibitionStage();
   const project = PROJECTS.aurora;
 
   const [auroraProgress, setAuroraProgress] = useState(0);
-  const metrics = computeChapterStageMetrics(auroraProgress, reducedMotion);
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
     const ctx = gsap.context(() => {
+      // Pure 2D Punk World — explicitly keep root WebGL canvas hidden & paused
       ScrollTrigger.create({
         trigger: section,
         start: 'top 62%',
         end: 'bottom 38%',
         scrub: true,
         onEnter: () => {
-          onEnvironmentChange?.('aurora-punk', 0.05);
+          setEnvironmentState('aurora-punk', 0.05, 0, 0);
           window.dispatchEvent(
             new CustomEvent('mahop:scene-accent', {
               detail: PROJECT_ENVIRONMENTS['aurora-punk'].accentHex,
@@ -51,7 +43,7 @@ export function AuroraSection({
           );
         },
         onEnterBack: () => {
-          onEnvironmentChange?.('aurora-punk', 0.92);
+          setEnvironmentState('aurora-punk', 0.92, 0, 0);
           window.dispatchEvent(
             new CustomEvent('mahop:scene-accent', {
               detail: PROJECT_ENVIRONMENTS['aurora-punk'].accentHex,
@@ -60,7 +52,7 @@ export function AuroraSection({
         },
         onToggle: (self) => {
           if (self.isActive) {
-            onEnvironmentChange?.('aurora-punk', self.progress);
+            setEnvironmentState('aurora-punk', self.progress, 0, 0);
             window.dispatchEvent(
               new CustomEvent('mahop:scene-accent', {
                 detail: PROJECT_ENVIRONMENTS['aurora-punk'].accentHex,
@@ -71,7 +63,7 @@ export function AuroraSection({
         onUpdate: (self) => {
           setAuroraProgress(self.progress);
           if (self.isActive) {
-            onEnvironmentChange?.('aurora-punk', self.progress);
+            setEnvironmentState('aurora-punk', self.progress, 0, 0);
           }
         },
       });
@@ -92,7 +84,6 @@ export function AuroraSection({
           }
         );
 
-        // Reversible torn-paper threshold gliding smoothly between collage and photography
         gsap.fromTo(
           '[data-aurora-threshold]',
           { xPercent: -6, scaleX: 0.96 },
@@ -128,37 +119,30 @@ export function AuroraSection({
     }, sectionRef);
 
     return () => ctx.revert();
-  }, [reducedMotion, onEnvironmentChange]);
+  }, [reducedMotion, setEnvironmentState]);
 
   return (
     <section
       ref={sectionRef}
       id="aurora-punk"
       data-testid="section-aurora"
-      className="relative w-full text-[#F5F3EF]"
+      className="relative z-20 w-full bg-[#09080A] text-[#F5F3EF] overflow-hidden"
     >
-      {standaloneStage && (
-        <div className="sticky top-0 h-[100svh] w-full pointer-events-none z-0 overflow-hidden">
-          <ProjectEnvironmentHost
-            sceneId="aurora-punk"
-            opacity={metrics.sceneOpacity}
-            scrollProgress={auroraProgress}
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ backgroundColor: `rgba(6,5,8,${metrics.backdropDim * 0.5})` }}
-          />
-        </div>
-      )}
+      {/* Pure 2D Underground Punk Backdrop (No Three.js / WebGL) */}
+      <AuroraPunkBackdrop scrollProgress={auroraProgress} />
 
-      <div className={standaloneStage ? 'relative z-10 -mt-[100svh]' : 'relative z-10'}>
-        {/* Underground Concrete Opening Window */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-24 z-10 bg-gradient-to-b from-[#020402] to-transparent"
+      />
+
+      <div className="relative z-10">
         {showHeader && (
           <div className="min-h-[54svh] sm:min-h-[68svh] flex flex-col justify-end px-5 sm:px-10 lg:px-16 pt-28 pb-14 sm:pb-20">
             <div className="max-w-7xl mx-auto w-full">
               <div className="flex flex-wrap items-baseline justify-between gap-4 mb-4">
-                <span className="font-mono text-[10px] tracking-[0.32em] uppercase text-[#C48CE9]">
-                  {project.sourcePages} · Underground Concrete Stage
+                <span className="font-mono text-[10px] tracking-[0.32em] uppercase text-[#C9A24D]">
+                  {project.sourcePages} · Underground Xerox & Crochet Stage
                 </span>
                 <span className="font-serif italic text-base sm:text-lg text-[#F5F3EF]/85">
                   Photographer {project.credits[0].name} · Stylist {project.credits[1].name} · Model {project.credits[2].name} · Dress by {project.credits[3].name}
@@ -172,7 +156,7 @@ export function AuroraSection({
           </div>
         )}
 
-        {/* PHASE 01 (p. 3) — Torn-Paper Wheatpaste Concrete Installation */}
+        {/* PHASE 01 (p. 3) — Torn-Paper Wheatpaste Installation */}
         <div
           data-aurora-phase="collage"
           className="px-4 sm:px-8 lg:px-14 py-12 sm:py-20 max-w-[1440px] mx-auto"
@@ -215,16 +199,16 @@ export function AuroraSection({
         <div className="py-10 sm:py-16 overflow-x-clip">
           <div
             data-aurora-threshold
-            className="torn-paper-edge mx-auto w-[96vw] max-w-[1380px] h-14 sm:h-20 flex items-center justify-between px-8"
+            className="torn-paper-edge mx-auto w-[96vw] max-w-[1380px] h-14 sm:h-20 flex items-center justify-between px-6 sm:px-8"
             style={{
               background:
-                'linear-gradient(90deg, rgba(124,17,184,0.34) 0%, rgba(123,0,0,0.42) 52%, rgba(20,16,24,0.8) 100%)',
+                'linear-gradient(90deg, rgba(123,0,0,0.52) 0%, rgba(201,162,77,0.22) 48%, rgba(124,17,184,0.34) 100%)',
             }}
           >
             <span className="font-mono text-[10px] tracking-[0.34em] uppercase text-[#F5F3EF]/85">
               Phase 01 Collage · Torn Ephemera
             </span>
-            <span className="font-serif italic text-base sm:text-lg text-[#F5F3EF]">
+            <span className="font-serif italic text-sm sm:text-lg text-[#F5F3EF]">
               Threshold → Phase 02 Editorial Portrait
             </span>
           </div>

@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { RouterProvider, useRouter } from './router/RouterContext';
+import { ExhibitionStageProvider, useExhibitionStage } from './context/ExhibitionStageContext';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
-import { StarCursor } from './components/StarCursor';
 import { JourneyStarCompanion } from './components/JourneyStarCompanion';
+import { IntroLoader } from './components/IntroLoader';
+import { ProjectEnvironmentHost } from './components/three/ProjectEnvironmentHost';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -69,8 +71,29 @@ function updateMetaTag(name: string, content: string, isProperty = false) {
   el.setAttribute('content', content);
 }
 
-function AppContent() {
+function shouldShowIntroInitially(): boolean {
+  if (typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('autostart') === '1' || params.get('skipIntro') === '1') {
+    return false;
+  }
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    return false;
+  }
+  if (params.get('loader') === '1') return true;
+  const path = window.location.pathname || '/';
+  return path === '/' || path === '';
+}
+
+function AppContent({
+  showIntro,
+  onIntroComplete,
+}: {
+  showIntro: boolean;
+  onIntroComplete: () => void;
+}) {
   const { currentPath } = useRouter();
+  const { setIntroActive } = useExhibitionStage();
 
   const normalizedPath =
     currentPath.length > 1 && currentPath.endsWith('/')
@@ -90,6 +113,11 @@ function AppContent() {
     updateMetaTag('twitter:title', meta.title);
     updateMetaTag('twitter:description', meta.description);
   }, [normalizedPath]);
+
+  const handleIntroComplete = () => {
+    setIntroActive(false);
+    onIntroComplete();
+  };
 
   const renderRoute = () => {
     switch (normalizedPath) {
@@ -114,11 +142,15 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-[#F5F3EF]">
-      <StarCursor />
+      {/* Persistent root Three.js stage shared cleanly across WebGL routes (hidden automatically on 2D routes) */}
+      <ProjectEnvironmentHost />
+
+      {showIntro && <IntroLoader onComplete={handleIntroComplete} />}
+
       <JourneyStarCompanion />
 
       <Navigation />
-      <main id="main-content" className="flex-1 focus:outline-none">
+      <main id="main-content" className="relative z-10 flex-1 focus:outline-none">
         <div key={normalizedPath} className="animate-page-enter">
           {renderRoute()}
         </div>
@@ -129,9 +161,16 @@ function AppContent() {
 }
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState<boolean>(shouldShowIntroInitially);
+
   return (
     <RouterProvider>
-      <AppContent />
+      <ExhibitionStageProvider initialIntroActive={showIntro}>
+        <AppContent
+          showIntro={showIntro}
+          onIntroComplete={() => setShowIntro(false)}
+        />
+      </ExhibitionStageProvider>
     </RouterProvider>
   );
 }

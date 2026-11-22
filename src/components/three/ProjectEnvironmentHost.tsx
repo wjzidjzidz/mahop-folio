@@ -1,25 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import {
   PROJECT_ENVIRONMENTS,
+  sceneUsesWebGL,
+  shouldRenderWebGLHost,
   type EnvironmentSceneId,
 } from '../../utils/journeyLogic';
 import { useIsCompactViewport, useReducedMotion } from '../../hooks/useReducedMotion';
+import { useExhibitionStage } from '../../context/ExhibitionStageContext';
 import { probeWebGLCapabilities } from './webglCapabilities';
-import { GatewayNocturneScene } from './GatewayNocturneScene';
-import { PlanetScenes, type PlanetKind } from './PlanetScenes';
-import { EditorialNatureScene } from './EditorialNatureScene';
-import { AuroraPunkScene } from './AuroraPunkScene';
-
-interface ProjectEnvironmentHostProps {
-  sceneId: EnvironmentSceneId;
-  opacity?: number;
-  scrollProgress?: number;
-  isActive?: boolean;
-  className?: string;
-}
+import { PlanetScenes } from './PlanetScenes';
 
 function RoomEnvironmentRig() {
   const { gl, scene } = useThree();
@@ -40,27 +36,107 @@ function RoomEnvironmentRig() {
   return null;
 }
 
-function CameraAndInvalidationController({
+/**
+ * Controlled cinematic HDR Bloom post-processing using Three.js EffectComposer + UnrealBloomPass.
+ * Strictly active on GPU hardware when not static/low-power; gracefully bypassed on software WebGL
+ * so headless/CPU devices render cleanly without stalls.
+ */
+function PostProcessingRig({
+  enabled,
   sceneId,
-  scrollProgressRef,
-  isStatic,
-  isSoftwareGl,
-  isVisible,
 }: {
+  enabled: boolean;
   sceneId: EnvironmentSceneId;
-  scrollProgressRef: React.MutableRefObject<number>;
-  isStatic: boolean;
-  isSoftwareGl: boolean;
-  isVisible: boolean;
 }) {
-  const { camera, invalidate, gl } = useThree();
+  const { gl, scene, camera, size } = useThree();
+  const composerRef = useRef<EffectComposer | null>(null);
+  const bloomRef = useRef<UnrealBloomPass | null>(null);
+
+  const composerBundle = useMemo(() => {
+    if (!enabled) return null;
+    const rt = new THREE.WebGLRenderTarget(
+      Math.max(1, size.width),
+      Math.max(1, size.height),
+      { type: THREE.HalfFloatType }
+    );
+    const composer = new EffectComposer(gl, rt);
+    composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    composer.setSize(size.width, size.height);
+
+    const renderPass = new RenderPass(scene, camera);
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(size.width, size.height),
+      0.48,
+      0.56,
+      0.72
+    );
+    const outputPass = new OutputPass();
+
+    composer.addPass(renderPass);
+    composer.addPass(bloomPass);
+    composer.addPass(outputPass);
+    return { composer, bloomPass, rt };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, gl, scene, camera]);
 
   useEffect(() => {
-    const target = PROJECT_ENVIRONMENTS[sceneId].cameraPosition;
-    camera.position.set(target[0], target[1], target[2]);
-    camera.lookAt(0, 0, 0);
+    if (!composerBundle) {
+      composerRef.current = null;
+      bloomRef.current = null;
+      return;
+    }
+    composerRef.current = composerBundle.composer;
+    bloomRef.current = composerBundle.bloomPass;
+    return () => {
+      composerBundle.bloomPass.dispose();
+      composerBundle.rt.dispose();
+      composerBundle.composer.dispose();
+      composerRef.current = null;
+      bloomRef.current = null;
+    };
+  }, [composerBundle]);
+
+  useEffect(() => {
+    if (!composerRef.current || !bloomRef.current) return;
+    composerRef.current.setSize(size.width, size.height);
+    bloomRef.current.resolution.set(size.width, size.height);
+  }, [size.width, size.height]);
+
+  useEffect(() => {
+    if (!bloomRef.current) return;
+    bloomRef.current.strength = 0.34;
+    bloomRef.current.radius = 0.44;
+    bloomRef.current.threshold = 0.78;
+  }, [sceneId]);
+
+  useFrame(() => {
+    if (enabled && composerRef.current) {
+      composerRef.current.render();
+    }
+  }, enabled ? 1 : 0);
+
+  return null;
+}
+
+function InvalidationController({
+  sceneId,
+  isStatic,
+  isSoftwareGl,
+  isWebGLScene,
+  menuOpen,
+}: {
+  sceneId: EnvironmentSceneId;
+  isStatic: boolean;
+  isSoftwareGl: boolean;
+  isWebGLScene: boolean;
+  menuOpen: boolean;
+}) {
+  const { invalidate, gl } = useThree();
+
+  useEffect(() => {
+    if (!isWebGLScene || menuOpen) return;
     invalidate();
-  }, [sceneId, camera, invalidate]);
+  }, [sceneId, isWebGLScene, menuOpen, invalidate]);
 
   useEffect(() => {
     const dom = gl.domElement;
@@ -79,18 +155,13 @@ function CameraAndInvalidationController({
   }, [gl, invalidate]);
 
   useEffect(() => {
-    if (isStatic || !isVisible || !isSoftwareGl) return;
+    if (isStatic || !isWebGLScene || !isSoftwareGl || menuOpen) return;
     invalidate();
     const timer = window.setInterval(() => {
       invalidate();
-    }, 120);
+    }, 90);
     return () => window.clearInterval(timer);
-  }, [isStatic, isSoftwareGl, isVisible, invalidate, sceneId]);
-
-  useEffect(() => {
-    if (!isVisible) return;
-    invalidate();
-  }, [scrollProgressRef.current, isVisible, invalidate]);
+  }, [isStatic, isSoftwareGl, isWebGLScene, menuOpen, invalidate, sceneId]);
 
   return null;
 }
@@ -106,16 +177,9 @@ function SceneRouter({
   isStatic: boolean;
   isLowPower: boolean;
 }) {
-  if (sceneId === 'gateway') {
-    return (
-      <GatewayNocturneScene
-        scrollProgressRef={scrollProgressRef}
-        isStatic={isStatic}
-        isLowPower={isLowPower}
-      />
-    );
-  }
   if (
+    sceneId === 'gateway' ||
+    sceneId === 'letoile-overview' ||
     sceneId === 'mercury' ||
     sceneId === 'uranus' ||
     sceneId === 'pluto' ||
@@ -123,111 +187,69 @@ function SceneRouter({
   ) {
     return (
       <PlanetScenes
-        planet={sceneId as PlanetKind}
+        sceneId={sceneId}
         scrollProgressRef={scrollProgressRef}
         isStatic={isStatic}
         isLowPower={isLowPower}
       />
     );
   }
-  if (sceneId === 'editorial-nature') {
-    return (
-      <EditorialNatureScene
-        scrollProgressRef={scrollProgressRef}
-        isStatic={isStatic}
-        isLowPower={isLowPower}
-      />
-    );
-  }
-  return (
-    <AuroraPunkScene
-      scrollProgressRef={scrollProgressRef}
-      isStatic={isStatic}
-      isLowPower={isLowPower}
-    />
-  );
+  return null;
 }
 
 function WebGLFallbackBackdrop({ sceneId }: { sceneId: EnvironmentSceneId }) {
   const cfg = PROJECT_ENVIRONMENTS[sceneId];
   return (
     <div
-      className="absolute inset-0 transition-opacity duration-500"
+      className="absolute inset-0"
       style={{ background: cfg.backdropGradient }}
       aria-hidden="true"
-    >
-      <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
-        style={{
-          width: sceneId === 'pluto' ? 'min(48vw, 380px)' : 'min(58vw, 500px)',
-          height: sceneId === 'pluto' ? 'min(48vw, 380px)' : 'min(58vw, 500px)',
-          border: `1px solid ${cfg.accentHex}38`,
-          boxShadow: `0 0 110px ${cfg.accentHex}28 inset`,
-        }}
-      />
-    </div>
+    />
   );
 }
 
 /**
- * Single reusable WebGL stage host routing cleanly across Gateway,
- * Mercury, Uranus, Pluto, Mars, Botanical Field, and Aurora Concrete Gallery.
+ * Single Root Persistent WebGL Host:
+ * Mounted once in App.tsx so Hero -> L'Étoile Maho and planetary transitions share a single WebGL canvas.
+ * Hides immediately and suspends ticks cleanly during pure-2D routes, archive pages, and whenever EXPLORE is open.
  */
-export function ProjectEnvironmentHost({
-  sceneId,
-  opacity = 1,
-  scrollProgress = 0,
-  isActive = true,
-  className = '',
-}: ProjectEnvironmentHostProps) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const scrollProgressRef = useRef<number>(scrollProgress);
-  scrollProgressRef.current = scrollProgress;
-
+export function ProjectEnvironmentHost() {
+  const { sceneId, sceneOpacity, backdropDim, menuOpen, scrollProgressRef } =
+    useExhibitionStage();
   const reducedMotion = useReducedMotion();
   const isCompact = useIsCompactViewport();
   const [capabilities] = useState(() => probeWebGLCapabilities());
   const [contextLost, setContextLost] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
 
-  useEffect(() => {
-    const el = hostRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]) {
-          setIsVisible(entries[0].isIntersecting);
-        }
-      },
-      { rootMargin: '150px 0px' }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  const canUseWebGL = capabilities.supported && !contextLost && isActive;
+  const isWebGLWorld = sceneUsesWebGL(sceneId);
+  const showWebGL = shouldRenderWebGLHost(sceneId, menuOpen);
+  const canRenderWebGL = capabilities.supported && !contextLost;
   const isSoftwareGl = capabilities.isSoftwareGl;
   const isLowPower = isCompact || isSoftwareGl;
-  const useDemandLoop = reducedMotion || isSoftwareGl || !isVisible;
+  const useDemandLoop = reducedMotion || isSoftwareGl || !showWebGL;
+  const enablePostProcessing =
+    canRenderWebGL && showWebGL && !isLowPower && !isSoftwareGl && !reducedMotion;
 
   return (
     <div
-      ref={hostRef}
       aria-hidden="true"
       data-testid="three-environment-host"
       data-active-scene={sceneId}
-      data-render-mode={canUseWebGL ? 'webgl' : 'fallback'}
-      className={`pointer-events-none absolute inset-0 overflow-hidden bg-black transition-opacity duration-300 ${className}`}
-      style={{ opacity }}
+      data-render-mode={!showWebGL ? 'pure-2d' : canRenderWebGL ? 'webgl' : 'fallback'}
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-black"
+      style={{
+        opacity: showWebGL ? sceneOpacity : 0,
+        visibility: showWebGL ? 'visible' : 'hidden',
+      }}
     >
-      <WebGLFallbackBackdrop sceneId={sceneId} />
+      {showWebGL && <WebGLFallbackBackdrop sceneId={sceneId} />}
 
-      {canUseWebGL && (
+      {canRenderWebGL && (
         <Canvas
           className="!absolute !inset-0 !h-full !w-full"
           dpr={isLowPower ? 1 : [1, 1.5]}
           frameloop={useDemandLoop ? 'demand' : 'always'}
-          camera={{ fov: 44, near: 0.1, far: 45, position: PROJECT_ENVIRONMENTS[sceneId].cameraPosition }}
+          camera={{ fov: 46, near: 0.1, far: 65, position: PROJECT_ENVIRONMENTS[sceneId].cameraPosition }}
           gl={{
             alpha: true,
             antialias: !isLowPower,
@@ -247,12 +269,12 @@ export function ProjectEnvironmentHost({
           }}
         >
           <RoomEnvironmentRig />
-          <CameraAndInvalidationController
+          <InvalidationController
             sceneId={sceneId}
-            scrollProgressRef={scrollProgressRef}
             isStatic={reducedMotion}
             isSoftwareGl={isSoftwareGl}
-            isVisible={isVisible}
+            isWebGLScene={showWebGL && isWebGLWorld}
+            menuOpen={menuOpen}
           />
           <SceneRouter
             sceneId={sceneId}
@@ -260,7 +282,15 @@ export function ProjectEnvironmentHost({
             isStatic={reducedMotion}
             isLowPower={isLowPower}
           />
+          <PostProcessingRig enabled={enablePostProcessing} sceneId={sceneId} />
         </Canvas>
+      )}
+
+      {showWebGL && (
+        <div
+          className="absolute inset-0 bg-black pointer-events-none transition-opacity duration-300"
+          style={{ opacity: backdropDim * 0.55 }}
+        />
       )}
     </div>
   );
