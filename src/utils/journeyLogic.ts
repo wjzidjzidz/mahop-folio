@@ -1034,3 +1034,239 @@ export function computeContactStarMorph(
     companionVisible: !settled,
   };
 }
+
+export type DeviceTier = 'phone' | 'tablet' | 'desktop';
+export type PlanetaryRenderMode = '2d' | '3d';
+
+export interface PlanetaryCapabilitySnapshot {
+  deviceTier: DeviceTier;
+  webglSupported: boolean;
+  isSoftwareGl: boolean;
+  reducedMotion: boolean;
+  hardwareConcurrency?: number;
+  deviceMemory?: number;
+  quickBenchmarkMs?: number;
+}
+
+/**
+ * Classifies viewport & pointer inputs into phone, tablet, or desktop.
+ * - Phones (< 768px): strictly 2D planetary experience (zero Three.js WebGL).
+ * - Tablets (768..1023px, or coarse-pointer touch tablets <= 1366px): evaluated once upfront.
+ * - Desktop (>= 1024px non-tablet): preserves existing Three.js WebGL experience untouched.
+ */
+export function classifyDeviceTier(
+  viewportWidth: number,
+  isCoarsePointer = false,
+  maxTouchPoints = 0
+): DeviceTier {
+  if (!Number.isFinite(viewportWidth) || viewportWidth < 768) {
+    return 'phone';
+  }
+  if (viewportWidth < 1024) {
+    return 'tablet';
+  }
+  if (isCoarsePointer && maxTouchPoints > 0 && viewportWidth <= 1366) {
+    return 'tablet';
+  }
+  return 'desktop';
+}
+
+export function isPlanetaryScene(sceneId: EnvironmentSceneId): boolean {
+  return (
+    sceneId === 'gateway' ||
+    sceneId === 'letoile-overview' ||
+    sceneId === 'mercury' ||
+    sceneId === 'uranus' ||
+    sceneId === 'pluto' ||
+    sceneId === 'mars'
+  );
+}
+
+/**
+ * Resolves the stable planetary rendering mode before L'Étoile Maho renders.
+ * Never flips mid-scroll between 3D and 2D.
+ */
+export function resolvePlanetaryRenderMode(
+  snapshot: PlanetaryCapabilitySnapshot
+): PlanetaryRenderMode {
+  if (snapshot.deviceTier === 'phone') {
+    return '2d';
+  }
+
+  if (snapshot.deviceTier === 'desktop') {
+    return snapshot.webglSupported ? '3d' : '2d';
+  }
+
+  // Tablet: capability & smoothness check
+  if (!snapshot.webglSupported || snapshot.isSoftwareGl || snapshot.reducedMotion) {
+    return '2d';
+  }
+
+  const cores = snapshot.hardwareConcurrency ?? 0;
+  if (cores > 0 && cores < 4) {
+    return '2d';
+  }
+
+  const mem = snapshot.deviceMemory ?? 0;
+  if (mem > 0 && mem < 4) {
+    return '2d';
+  }
+
+  const benchMs = snapshot.quickBenchmarkMs ?? 0;
+  if (benchMs > 18) {
+    return '2d';
+  }
+
+  return '3d';
+}
+
+export interface Planetary2DTransitionState {
+  focusPlanet: PlanetKind | null;
+  overviewLiftYPercent: number;
+  overviewScale: number;
+  planetFocusScale: Record<PlanetKind, number>;
+  planetFadeOpacity: Record<PlanetKind, number>;
+  planetShiftToCenter: number;
+  portalExpandScale: number;
+  portalIrisRadiusPercent: number;
+  portalVeilOpacity: number;
+  exteriorOpacity: number;
+  interiorWorldOpacity: number;
+  worldParallaxProgress: number;
+  recedeFactor: number;
+}
+
+/**
+ * Pure, scroll-reversible 2D planetary approach, silhouette/iris expansion,
+ * atmospheric portal veil, and bespoke world reveal curve for phones & fallback tablets.
+ */
+export function computePlanetary2DTransitionState(
+  sceneId: EnvironmentSceneId,
+  chapterProgress: number,
+  reducedMotion: boolean
+): Planetary2DTransitionState {
+  const p = clamp01(chapterProgress);
+  const neutralScales: Record<PlanetKind, number> = {
+    mercury: 1,
+    uranus: 1,
+    pluto: 1,
+    mars: 1,
+  };
+  const neutralOpacity: Record<PlanetKind, number> = {
+    mercury: 1,
+    uranus: 1,
+    pluto: 1,
+    mars: 1,
+  };
+
+  if (sceneId === 'gateway') {
+    const liftT = reducedMotion ? 0 : smoothStep(0.02, 0.96, p);
+    return {
+      focusPlanet: null,
+      overviewLiftYPercent: Number(lerp(28, 0, liftT).toFixed(2)),
+      overviewScale: Number(lerp(0.86, 1, liftT).toFixed(4)),
+      planetFocusScale: neutralScales,
+      planetFadeOpacity: neutralOpacity,
+      planetShiftToCenter: 0,
+      portalExpandScale: 1,
+      portalIrisRadiusPercent: 0,
+      portalVeilOpacity: 0,
+      exteriorOpacity: 1,
+      interiorWorldOpacity: 0,
+      worldParallaxProgress: 0,
+      recedeFactor: 0,
+    };
+  }
+
+  if (
+    sceneId !== 'mercury' &&
+    sceneId !== 'uranus' &&
+    sceneId !== 'pluto' &&
+    sceneId !== 'mars'
+  ) {
+    return {
+      focusPlanet: null,
+      overviewLiftYPercent: 0,
+      overviewScale: 1,
+      planetFocusScale: neutralScales,
+      planetFadeOpacity: neutralOpacity,
+      planetShiftToCenter: 0,
+      portalExpandScale: 1,
+      portalIrisRadiusPercent: 0,
+      portalVeilOpacity: 0,
+      exteriorOpacity: 1,
+      interiorWorldOpacity: 0,
+      worldParallaxProgress: 0,
+      recedeFactor: 0,
+    };
+  }
+
+  if (reducedMotion) {
+    return {
+      focusPlanet: sceneId,
+      overviewLiftYPercent: 0,
+      overviewScale: 1,
+      planetFocusScale: {
+        mercury: sceneId === 'mercury' ? 1.8 : 0.7,
+        uranus: sceneId === 'uranus' ? 1.8 : 0.7,
+        pluto: sceneId === 'pluto' ? 1.8 : 0.7,
+        mars: sceneId === 'mars' ? 1.8 : 0.7,
+      },
+      planetFadeOpacity: {
+        mercury: sceneId === 'mercury' ? 1 : 0,
+        uranus: sceneId === 'uranus' ? 1 : 0,
+        pluto: sceneId === 'pluto' ? 1 : 0,
+        mars: sceneId === 'mars' ? 1 : 0,
+      },
+      planetShiftToCenter: 1,
+      portalExpandScale: 1,
+      portalIrisRadiusPercent: 145,
+      portalVeilOpacity: 0,
+      exteriorOpacity: 0,
+      interiorWorldOpacity: 1,
+      worldParallaxProgress: 0.25,
+      recedeFactor: 0.25,
+    };
+  }
+
+  const focusT = smoothStep(0.01, 0.14, p);
+  const othersFade = 1 - smoothStep(0.01, 0.12, p);
+  const portalT = smoothStep(0.10, 0.28, p);
+  const irisRadius = lerp(0, 145, smoothStep(0.12, 0.28, p));
+  const veilPeak = Math.sin(clamp01((p - 0.10) / 0.18) * Math.PI);
+  const portalVeilOpacity = p >= 0.10 && p <= 0.28 ? Number((veilPeak * 0.78).toFixed(4)) : 0;
+  const exteriorOpacity = Number((1 - smoothStep(0.16, 0.27, p)).toFixed(4));
+  const interiorWorldOpacity = Number(smoothStep(0.12, 0.27, p).toFixed(4));
+  const worldParallaxProgress = Number(clamp01((p - 0.18) / 0.82).toFixed(4));
+  const recedeFactor = Number(smoothStep(0.56, 0.94, p).toFixed(4));
+
+  const targetExpandScale = Number(lerp(1, 5.4, portalT).toFixed(3));
+  const targetFocusScale = Number(lerp(1, 1.85, focusT).toFixed(3));
+
+  return {
+    focusPlanet: sceneId,
+    overviewLiftYPercent: 0,
+    overviewScale: 1,
+    planetFocusScale: {
+      mercury: sceneId === 'mercury' ? targetFocusScale : Number(lerp(1, 0.72, focusT).toFixed(3)),
+      uranus: sceneId === 'uranus' ? targetFocusScale : Number(lerp(1, 0.72, focusT).toFixed(3)),
+      pluto: sceneId === 'pluto' ? targetFocusScale : Number(lerp(1, 0.72, focusT).toFixed(3)),
+      mars: sceneId === 'mars' ? targetFocusScale : Number(lerp(1, 0.72, focusT).toFixed(3)),
+    },
+    planetFadeOpacity: {
+      mercury: sceneId === 'mercury' ? 1 : Number(othersFade.toFixed(4)),
+      uranus: sceneId === 'uranus' ? 1 : Number(othersFade.toFixed(4)),
+      pluto: sceneId === 'pluto' ? 1 : Number(othersFade.toFixed(4)),
+      mars: sceneId === 'mars' ? 1 : Number(othersFade.toFixed(4)),
+    },
+    planetShiftToCenter: Number(focusT.toFixed(4)),
+    portalExpandScale: targetExpandScale,
+    portalIrisRadiusPercent: Number(irisRadius.toFixed(2)),
+    portalVeilOpacity,
+    exteriorOpacity,
+    interiorWorldOpacity,
+    worldParallaxProgress,
+    recedeFactor,
+  };
+}
+

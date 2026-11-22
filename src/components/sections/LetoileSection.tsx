@@ -88,6 +88,12 @@ export function LetoileSection({ showHeader = true }: LetoileSectionProps) {
             if (planetJourneyRef.current.active) return;
             emitEnv('letoile-overview', self.progress, computeOverviewMetrics(self.progress));
           },
+          onRefresh: (self) => {
+            if (planetJourneyRef.current.active) return;
+            if (self.isActive) {
+              emitEnv('letoile-overview', self.progress, computeOverviewMetrics(self.progress));
+            }
+          },
           onUpdate: (self) => {
             if (planetJourneyRef.current.active) return;
             if (self.isActive) {
@@ -171,6 +177,12 @@ export function LetoileSection({ showHeader = true }: LetoileSectionProps) {
             if (planetJourneyRef.current.active) return;
             syncChapter(self.progress);
           },
+          onRefresh: (self) => {
+            if (planetJourneyRef.current.active) return;
+            if (self.isActive) {
+              syncChapter(self.progress);
+            }
+          },
           onToggle: (self) => {
             if (planetJourneyRef.current.active) return;
             if (self.isActive) {
@@ -207,7 +219,46 @@ export function LetoileSection({ showHeader = true }: LetoileSectionProps) {
       });
     }, sectionRef);
 
-    return () => ctx.revert();
+    const sectionEl = sectionRef.current;
+    let refreshTimer: number | undefined;
+    const scheduleRefresh = () => {
+      if (refreshTimer) window.clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(() => {
+        ScrollTrigger.refresh();
+        ScrollTrigger.update();
+      }, 60);
+    };
+
+    const handleCaptureLoad = (event: Event) => {
+      if ((event.target as HTMLElement | null)?.tagName === 'IMG') {
+        scheduleRefresh();
+      }
+    };
+
+    sectionEl?.addEventListener('load', handleCaptureLoad, true);
+
+    let resizeObserver: ResizeObserver | undefined;
+    if (sectionEl && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        scheduleRefresh();
+      });
+      resizeObserver.observe(sectionEl);
+    }
+
+    let fontsCancelled = false;
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (!fontsCancelled) scheduleRefresh();
+      });
+    }
+
+    return () => {
+      fontsCancelled = true;
+      if (refreshTimer) window.clearTimeout(refreshTimer);
+      sectionEl?.removeEventListener('load', handleCaptureLoad, true);
+      resizeObserver?.disconnect();
+      ctx.revert();
+    };
   }, [reducedMotion, setEnvironmentState, planetJourneyRef]);
 
   // Cancel any active planetary flight cleanly on unmount or manual interruption

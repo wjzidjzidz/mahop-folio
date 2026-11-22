@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MATERIAL_SWATCHES } from '../data/content';
 import {
+  classifyDeviceTier,
   computeAboutRevealState,
   computeChapterStageMetrics,
   computeContactStarMorph,
@@ -10,12 +11,15 @@ import {
   computeHeroStarDetachState,
   computeIntroTimelineMetrics,
   computeMaterialSampleState,
+  computePlanetary2DTransitionState,
   computePlanetJourneyState,
   computePlanetWorldPosition,
   computePuzzleTileMaskState,
   computeSolarSystemState,
   computeStarCompanionState,
   getMappedMaterialSwatches,
+  isPlanetaryScene,
+  resolvePlanetaryRenderMode,
   sceneUsesWebGL,
   shouldRenderWebGLHost,
   SOLAR_PLANET_SPECS,
@@ -273,3 +277,130 @@ test('computeStarCompanionState and computeContactStarMorph transform cleanly wi
   assert.equal(landed.companionVisible, false);
   assert.equal(landed.inkMix, 1);
 });
+
+test('classifyDeviceTier and resolvePlanetaryRenderMode keep phones 2D, preserve desktop 3D, and gate tablets by capability', () => {
+  assert.equal(classifyDeviceTier(390, true, 5), 'phone');
+  assert.equal(classifyDeviceTier(767, false, 0), 'phone');
+  assert.equal(classifyDeviceTier(768, true, 5), 'tablet');
+  assert.equal(classifyDeviceTier(1023, false, 0), 'tablet');
+  assert.equal(classifyDeviceTier(1024, true, 5), 'tablet');
+  assert.equal(classifyDeviceTier(1024, false, 0), 'desktop');
+  assert.equal(classifyDeviceTier(1440, false, 0), 'desktop');
+
+  // Phones always resolve to 2D even on fast hardware
+  assert.equal(
+    resolvePlanetaryRenderMode({
+      deviceTier: 'phone',
+      webglSupported: true,
+      isSoftwareGl: false,
+      reducedMotion: false,
+      hardwareConcurrency: 8,
+      deviceMemory: 8,
+      quickBenchmarkMs: 0.5,
+    }),
+    '2d'
+  );
+
+  // Desktop preserves 3D whenever WebGL is supported
+  assert.equal(
+    resolvePlanetaryRenderMode({
+      deviceTier: 'desktop',
+      webglSupported: true,
+      isSoftwareGl: true,
+      reducedMotion: false,
+    }),
+    '3d'
+  );
+
+  // Tablet uses 3D only when hardware GPU + resources + benchmark are smooth
+  assert.equal(
+    resolvePlanetaryRenderMode({
+      deviceTier: 'tablet',
+      webglSupported: true,
+      isSoftwareGl: false,
+      reducedMotion: false,
+      hardwareConcurrency: 8,
+      deviceMemory: 8,
+      quickBenchmarkMs: 1.8,
+    }),
+    '3d'
+  );
+
+  // Tablet falls back cleanly to 2D on software GL, constrained hardware, or slow probe
+  assert.equal(
+    resolvePlanetaryRenderMode({
+      deviceTier: 'tablet',
+      webglSupported: true,
+      isSoftwareGl: true,
+      reducedMotion: false,
+      hardwareConcurrency: 8,
+      deviceMemory: 8,
+      quickBenchmarkMs: 1.5,
+    }),
+    '2d'
+  );
+  assert.equal(
+    resolvePlanetaryRenderMode({
+      deviceTier: 'tablet',
+      webglSupported: true,
+      isSoftwareGl: false,
+      reducedMotion: false,
+      hardwareConcurrency: 2,
+      deviceMemory: 8,
+      quickBenchmarkMs: 1.5,
+    }),
+    '2d'
+  );
+  assert.equal(
+    resolvePlanetaryRenderMode({
+      deviceTier: 'tablet',
+      webglSupported: true,
+      isSoftwareGl: false,
+      reducedMotion: false,
+      hardwareConcurrency: 6,
+      deviceMemory: 4,
+      quickBenchmarkMs: 24,
+    }),
+    '2d'
+  );
+});
+
+test('computePlanetary2DTransitionState smoothly orchestrates gateway -> overview -> focus -> portal -> world and reverses cleanly', () => {
+  assert.equal(isPlanetaryScene('gateway'), true);
+  assert.equal(isPlanetaryScene('letoile-overview'), true);
+  assert.equal(isPlanetaryScene('mercury'), true);
+  assert.equal(isPlanetaryScene('white-collage'), false);
+  assert.equal(isPlanetaryScene('aurora-punk'), false);
+
+  const gwStart = computePlanetary2DTransitionState('gateway', 0, false);
+  const gwEnd = computePlanetary2DTransitionState('gateway', 1, false);
+  const overview = computePlanetary2DTransitionState('letoile-overview', 0, false);
+  assert.ok(gwStart.overviewLiftYPercent > 20);
+  assert.equal(gwEnd.overviewLiftYPercent, overview.overviewLiftYPercent);
+  assert.equal(gwEnd.overviewScale, overview.overviewScale);
+
+  const focus = computePlanetary2DTransitionState('uranus', 0.10, false);
+  assert.equal(focus.focusPlanet, 'uranus');
+  assert.ok(focus.planetFocusScale.uranus > 1.2);
+  assert.ok(focus.planetFadeOpacity.mars < 0.6);
+
+  const portalCrossing = computePlanetary2DTransitionState('uranus', 0.20, false);
+  assert.ok(portalCrossing.portalVeilOpacity > 0.5);
+  assert.ok(portalCrossing.portalIrisRadiusPercent > 15 && portalCrossing.portalIrisRadiusPercent < 140);
+  assert.ok(portalCrossing.interiorWorldOpacity > 0);
+
+  const worldArrived = computePlanetary2DTransitionState('uranus', 0.65, false);
+  assert.equal(worldArrived.exteriorOpacity, 0);
+  assert.equal(worldArrived.interiorWorldOpacity, 1);
+  assert.equal(worldArrived.portalIrisRadiusPercent, 145);
+  assert.ok(worldArrived.worldParallaxProgress > 0.4);
+
+  // Reversing upward back to overview produces identical baseline state
+  const reversed = computePlanetary2DTransitionState('letoile-overview', 0, false);
+  assert.deepEqual(reversed, overview);
+
+  const reduced = computePlanetary2DTransitionState('mars', 0.1, true);
+  assert.equal(reduced.interiorWorldOpacity, 1);
+  assert.equal(reduced.portalVeilOpacity, 0);
+});
+

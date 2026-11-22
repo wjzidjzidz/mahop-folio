@@ -7,15 +7,21 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import {
+  classifyDeviceTier,
+  isPlanetaryScene,
   PROJECT_ENVIRONMENTS,
+  resolvePlanetaryRenderMode,
   sceneUsesWebGL,
   shouldRenderWebGLHost,
+  type DeviceTier,
   type EnvironmentSceneId,
+  type PlanetaryRenderMode,
 } from '../../utils/journeyLogic';
 import { useIsCompactViewport, useReducedMotion } from '../../hooks/useReducedMotion';
 import { useExhibitionStage } from '../../context/ExhibitionStageContext';
-import { probeWebGLCapabilities } from './webglCapabilities';
+import { probeWebGLCapabilities, readBrowserDeviceInputs } from './webglCapabilities';
 import { PlanetScenes } from './PlanetScenes';
+import { Planetary2DUniverse } from '../environments/Planetary2DUniverse';
 
 function RoomEnvironmentRig() {
   const { gl, scene } = useThree();
@@ -218,75 +224,157 @@ export function ProjectEnvironmentHost() {
     useExhibitionStage();
   const reducedMotion = useReducedMotion();
   const isCompact = useIsCompactViewport();
-  const [capabilities] = useState(() => probeWebGLCapabilities());
+
+  // Compute initial device tier + capability strategy synchronously once per tier
+  // so L'Étoile Maho never flips mid-scroll between Three.js and 2D.
+  const lockedTierModeRef = useRef<Partial<Record<DeviceTier, PlanetaryRenderMode>>>({});
+
+  const evaluateTierAndMode = () => {
+    const inputs = readBrowserDeviceInputs();
+    const tier = classifyDeviceTier(
+      inputs.viewportWidth,
+      inputs.isCoarsePointer,
+      inputs.maxTouchPoints
+    );
+    const cachedMode = lockedTierModeRef.current[tier];
+    if (cachedMode) {
+      return { tier, mode: cachedMode };
+    }
+    const caps = tier === 'phone' ? null : probeWebGLCapabilities();
+    const mode = resolvePlanetaryRenderMode({
+      deviceTier: tier,
+      webglSupported: caps ? caps.supported : false,
+      isSoftwareGl: caps ? caps.isSoftwareGl : false,
+      reducedMotion,
+      hardwareConcurrency: inputs.hardwareConcurrency,
+      deviceMemory: inputs.deviceMemory,
+      quickBenchmarkMs: caps ? caps.quickBenchmarkMs : 0,
+    });
+    lockedTierModeRef.current[tier] = mode;
+    return { tier, mode };
+  };
+
+  const [tierState, setTierState] = useState<{ tier: DeviceTier; mode: PlanetaryRenderMode }>(() =>
+    evaluateTierAndMode()
+  );
+  const capabilities = useMemo(
+    () =>
+      tierState.tier === 'phone'
+        ? { supported: false, isSoftwareGl: false, rendererName: 'mobile-2d', quickBenchmarkMs: 0 }
+        : probeWebGLCapabilities(),
+    [tierState.tier]
+  );
   const [contextLost, setContextLost] = useState(false);
 
+  // Re-evaluate only if viewport crosses a major phone/tablet/desktop tier boundary
+  useEffect(() => {
+    const onResize = () => {
+      const next = evaluateTierAndMode();
+      setTierState((prev) =>
+        prev.tier === next.tier && prev.mode === next.mode ? prev : next
+      );
+    };
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reducedMotion]);
+
   const isWebGLWorld = sceneUsesWebGL(sceneId);
-  const showWebGL = shouldRenderWebGLHost(sceneId, menuOpen);
-  const canRenderWebGL = capabilities.supported && !contextLost;
+  const showHost = shouldRenderWebGLHost(sceneId, menuOpen);
+  const isPlanetary = isPlanetaryScene(sceneId);
+  const use2DPlanetary = tierState.mode === '2d' && isPlanetary;
+  const canRenderWebGL =
+    tierState.mode === '3d' && capabilities.supported && !contextLost;
   const isSoftwareGl = capabilities.isSoftwareGl;
   const isLowPower = isCompact || isSoftwareGl;
-  const useDemandLoop = reducedMotion || isSoftwareGl || !showWebGL;
+  const useDemandLoop = reducedMotion || isSoftwareGl || !showHost;
   const enablePostProcessing =
-    canRenderWebGL && showWebGL && !isLowPower && !isSoftwareGl && !reducedMotion;
+    canRenderWebGL && showHost && !isLowPower && !isSoftwareGl && !reducedMotion;
+
+  const renderModeAttr = !showHost
+    ? 'pure-2d'
+    : use2DPlanetary
+      ? '2d-planetary'
+      : canRenderWebGL
+        ? 'webgl'
+        : 'fallback';
 
   return (
     <div
       aria-hidden="true"
       data-testid="three-environment-host"
       data-active-scene={sceneId}
-      data-render-mode={!showWebGL ? 'pure-2d' : canRenderWebGL ? 'webgl' : 'fallback'}
+      data-device-tier={tierState.tier}
+      data-render-mode={renderModeAttr}
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-black"
       style={{
-        opacity: showWebGL ? sceneOpacity : 0,
-        visibility: showWebGL ? 'visible' : 'hidden',
+        opacity: showHost ? sceneOpacity : 0,
+        visibility: showHost ? 'visible' : 'hidden',
       }}
     >
-      {showWebGL && <WebGLFallbackBackdrop sceneId={sceneId} />}
-
-      {canRenderWebGL && (
-        <Canvas
-          className="!absolute !inset-0 !h-full !w-full"
-          dpr={isLowPower ? 1 : [1, 1.5]}
-          frameloop={useDemandLoop ? 'demand' : 'always'}
-          camera={{ fov: 46, near: 0.1, far: 65, position: PROJECT_ENVIRONMENTS[sceneId].cameraPosition }}
-          gl={{
-            alpha: true,
-            antialias: !isLowPower,
-            powerPreference: isLowPower ? 'low-power' : 'high-performance',
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.08,
-          }}
-          onCreated={({ gl }) => {
-            gl.outputColorSpace = THREE.SRGBColorSpace;
-            gl.domElement.addEventListener('webglcontextlost', (e) => {
-              e.preventDefault();
-              setContextLost(true);
-            });
-            gl.domElement.addEventListener('webglcontextrestored', () => {
-              setContextLost(false);
-            });
-          }}
-        >
-          <RoomEnvironmentRig />
-          <InvalidationController
-            sceneId={sceneId}
-            isStatic={reducedMotion}
-            isSoftwareGl={isSoftwareGl}
-            isWebGLScene={showWebGL && isWebGLWorld}
-            menuOpen={menuOpen}
-          />
-          <SceneRouter
-            sceneId={sceneId}
-            scrollProgressRef={scrollProgressRef}
-            isStatic={reducedMotion}
-            isLowPower={isLowPower}
-          />
-          <PostProcessingRig enabled={enablePostProcessing} sceneId={sceneId} />
-        </Canvas>
+      {showHost && use2DPlanetary && (
+        <Planetary2DUniverse
+          sceneId={sceneId}
+          scrollProgressRef={scrollProgressRef}
+          active={showHost}
+        />
       )}
 
-      {showWebGL && (
+      {showHost && !use2DPlanetary && !canRenderWebGL && (
+        <WebGLFallbackBackdrop sceneId={sceneId} />
+      )}
+
+      {canRenderWebGL && (
+        <>
+          {showHost && <WebGLFallbackBackdrop sceneId={sceneId} />}
+          <Canvas
+            className="!absolute !inset-0 !h-full !w-full"
+            dpr={isLowPower ? 1 : [1, 1.5]}
+            frameloop={useDemandLoop ? 'demand' : 'always'}
+            camera={{
+              fov: 46,
+              near: 0.1,
+              far: 65,
+              position: PROJECT_ENVIRONMENTS[sceneId].cameraPosition,
+            }}
+            gl={{
+              alpha: true,
+              antialias: !isLowPower,
+              powerPreference: isLowPower ? 'low-power' : 'high-performance',
+              toneMapping: THREE.ACESFilmicToneMapping,
+              toneMappingExposure: 1.08,
+            }}
+            onCreated={({ gl }) => {
+              gl.outputColorSpace = THREE.SRGBColorSpace;
+              gl.domElement.addEventListener('webglcontextlost', (e) => {
+                e.preventDefault();
+                setContextLost(true);
+              });
+              gl.domElement.addEventListener('webglcontextrestored', () => {
+                setContextLost(false);
+              });
+            }}
+          >
+            <RoomEnvironmentRig />
+            <InvalidationController
+              sceneId={sceneId}
+              isStatic={reducedMotion}
+              isSoftwareGl={isSoftwareGl}
+              isWebGLScene={showHost && isWebGLWorld}
+              menuOpen={menuOpen}
+            />
+            <SceneRouter
+              sceneId={sceneId}
+              scrollProgressRef={scrollProgressRef}
+              isStatic={reducedMotion}
+              isLowPower={isLowPower}
+            />
+            <PostProcessingRig enabled={enablePostProcessing} sceneId={sceneId} />
+          </Canvas>
+        </>
+      )}
+
+      {showHost && (
         <div
           className="absolute inset-0 bg-black pointer-events-none transition-opacity duration-300"
           style={{ opacity: backdropDim * 0.55 }}

@@ -1,7 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useExhibitionStage } from '../context/ExhibitionStageContext';
 import { computeIntroTimelineMetrics, type IntroTimelineMetrics } from '../utils/journeyLogic';
+
+const DESKTOP_TRACE_PATH_D =
+  'M 18 112 L 42 26 L 68 88 L 94 26 L 118 110 C 138 56 154 24 176 28 C 194 32 204 86 226 108 L 246 28 L 252 72 L 292 68 L 300 28 C 318 46 334 62 356 70 C 378 76 392 52 406 32 L 434 110 L 444 26 C 476 24 504 38 502 64 C 500 84 468 88 446 84';
+
+// Mobile calligraphic path stays centered on the optical wordmark axis (y = 70)
+// so the star never starts below the letters or jumps upward on narrow viewports.
+const MOBILE_TRACE_PATH_D =
+  'M 18 70 L 44 46 L 70 70 L 94 46 L 118 70 C 138 54 156 46 176 48 C 194 50 206 68 226 70 L 248 48 L 254 70 L 292 70 L 304 54 C 322 64 338 70 356 70 C 376 70 392 56 408 52 L 434 70 L 448 48 C 478 48 502 56 500 68 C 498 72 470 72 446 70';
 
 interface IntroLoaderProps {
   onComplete: () => void;
@@ -54,6 +62,33 @@ export function IntroLoader({ onComplete }: IntroLoaderProps) {
     };
     onComplete();
   };
+
+  const isMobileViewport = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  // Initialize star coordinates synchronously before first paint so frame 0 never flashes off-center
+  useLayoutEffect(() => {
+    if (reducedMotion || typeof window === 'undefined') return;
+    const slotRect = introStarSlotRef.current?.getBoundingClientRect();
+    const svgRect = traceSvgRef.current?.getBoundingClientRect();
+    const slotCenterX = slotRect ? slotRect.left + slotRect.width * 0.5 : window.innerWidth * 0.5;
+    const slotCenterY = slotRect ? slotRect.top + slotRect.height * 0.5 : window.innerHeight * 0.5;
+    const penSize = Math.min(44, Math.max(26, window.innerWidth * 0.032));
+    const mobile = window.innerWidth < 768;
+
+    introStarGuideRef.current = {
+      active: true,
+      mode: 'writing',
+      clientX: svgRect ? svgRect.left + (18 / 520) * svgRect.width : slotCenterX,
+      clientY: mobile
+        ? slotCenterY
+        : svgRect
+          ? svgRect.top + (112 / 140) * svgRect.height
+          : slotCenterY,
+      sizePx: penSize,
+      rotationDeg: 0,
+      starGlow: 0,
+    };
+  }, [reducedMotion, introStarGuideRef]);
 
   useEffect(() => {
     if (reducedMotion) {
@@ -132,7 +167,10 @@ export function IntroLoader({ onComplete }: IntroLoaderProps) {
         const pt = traceEl.getPointAtLength(pathLen * writeEase);
         const svgRect = svgEl.getBoundingClientRect();
         const pathX = svgRect.left + (pt.x / 520) * svgRect.width;
-        const pathY = svgRect.top + (pt.y / 140) * svgRect.height;
+        const rawPathY = svgRect.top + (pt.y / 140) * svgRect.height;
+        const mobileViewport = window.innerWidth < 768;
+        // On mobile, keep vertical excursion strictly centered around slotCenterY so the star never dips below letters
+        const pathY = mobileViewport ? slotCenterY + (rawPathY - slotCenterY) * 0.35 : rawPathY;
         const penSize = Math.min(44, Math.max(26, window.innerWidth * 0.032));
         const sT = m.starSettleT;
 
@@ -140,7 +178,7 @@ export function IntroLoader({ onComplete }: IntroLoaderProps) {
           active: true,
           mode: sT > 0.08 ? 'slot' : 'writing',
           clientX: pathX + (slotCenterX - pathX) * sT,
-          clientY: pathY + (slotCenterY - pathY) * sT,
+          clientY: mobileViewport ? slotCenterY : pathY + (slotCenterY - pathY) * sT,
           sizePx: penSize + (slotSizePx - penSize) * sT,
           rotationDeg: (1 - sT) * (writeEase * 220),
           starGlow: m.starGlow,
@@ -225,7 +263,7 @@ export function IntroLoader({ onComplete }: IntroLoaderProps) {
           >
             <path
               ref={tracePathRef}
-              d="M 18 112 L 42 26 L 68 88 L 94 26 L 118 110 C 138 56 154 24 176 28 C 194 32 204 86 226 108 L 246 28 L 252 72 L 292 68 L 300 28 C 318 46 334 62 356 70 C 378 76 392 52 406 32 L 434 110 L 444 26 C 476 24 504 38 502 64 C 500 84 468 88 446 84"
+              d={isMobileViewport ? MOBILE_TRACE_PATH_D : DESKTOP_TRACE_PATH_D}
               fill="none"
               stroke="rgba(245, 243, 239, 0.78)"
               strokeWidth="2"
@@ -238,7 +276,8 @@ export function IntroLoader({ onComplete }: IntroLoaderProps) {
             className="leading-none transition-all duration-300"
             style={{
               opacity: revealedCount >= 1 ? 1 : 0,
-              transform: revealedCount >= 1 ? 'translateY(0)' : 'translateY(8px)',
+              transform:
+                revealedCount >= 1 || isMobileViewport ? 'translateY(0)' : 'translateY(8px)',
             }}
           >
             M
@@ -247,7 +286,8 @@ export function IntroLoader({ onComplete }: IntroLoaderProps) {
             className="leading-none transition-all duration-300"
             style={{
               opacity: revealedCount >= 2 ? 1 : 0,
-              transform: revealedCount >= 2 ? 'translateY(0)' : 'translateY(8px)',
+              transform:
+                revealedCount >= 2 || isMobileViewport ? 'translateY(0)' : 'translateY(8px)',
             }}
           >
             A
@@ -256,7 +296,8 @@ export function IntroLoader({ onComplete }: IntroLoaderProps) {
             className="leading-none transition-all duration-300"
             style={{
               opacity: revealedCount >= 3 ? 1 : 0,
-              transform: revealedCount >= 3 ? 'translateY(0)' : 'translateY(8px)',
+              transform:
+                revealedCount >= 3 || isMobileViewport ? 'translateY(0)' : 'translateY(8px)',
             }}
           >
             H
@@ -287,7 +328,8 @@ export function IntroLoader({ onComplete }: IntroLoaderProps) {
             className="leading-none transition-all duration-300"
             style={{
               opacity: revealedCount >= 5 ? 1 : 0,
-              transform: revealedCount >= 5 ? 'translateY(0)' : 'translateY(8px)',
+              transform:
+                revealedCount >= 5 || isMobileViewport ? 'translateY(0)' : 'translateY(8px)',
             }}
           >
             P

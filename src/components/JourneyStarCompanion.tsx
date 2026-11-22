@@ -108,13 +108,22 @@ export function JourneyStarCompanion() {
       // STAGE 0: Intro Sequence — drive the single star cleanly above IntroLoader
       const guide = introStarGuideRef.current;
       if (guide.active && guide.sizePx > 0) {
-        currentX = guide.clientX;
-        currentY = guide.clientY;
+        const hasValidGuide = guide.clientX > 0 || guide.clientY > 0;
+        currentX = hasValidGuide ? guide.clientX : window.innerWidth * 0.5;
+        currentY = hasValidGuide ? guide.clientY : window.innerHeight * 0.5;
         currentSizePx = guide.sizePx;
         currentRot = guide.rotationDeg;
 
         wrapper.style.zIndex = '60';
-        applyStarVisual(currentX, currentY, currentSizePx, currentRot, '#FFFDF7', 'normal', 1);
+        applyStarVisual(
+          currentX,
+          currentY,
+          currentSizePx,
+          currentRot,
+          '#FFFDF7',
+          'normal',
+          hasValidGuide ? 1 : 0
+        );
 
         if (halo) {
           const glowAlpha = Math.min(0.65, 0.14 + guide.starGlow * 0.42);

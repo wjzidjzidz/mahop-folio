@@ -35,31 +35,52 @@ export function HomePage() {
   const reducedMotion = useReducedMotion();
   const { setEnvironmentState, introActive, planetJourneyRef } = useExhibitionStage();
 
-  // Debounced ScrollTrigger.refresh when lazy exhibition artwork finishes loading
+  // Debounced ScrollTrigger.refresh when fonts, lazy exhibition artwork, or layout dimensions settle
   useEffect(() => {
     const root = pageRef.current;
-    if (!root || reducedMotion) return;
+    if (!root) return;
 
     let timer: number | undefined;
     const scheduleRefresh = () => {
       if (timer) window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         ScrollTrigger.refresh();
-      }, 180);
+        ScrollTrigger.update();
+      }, 60);
     };
 
-    const imgs = Array.from(root.querySelectorAll('img'));
-    imgs.forEach((img) => {
-      if (!img.complete) {
-        img.addEventListener('load', scheduleRefresh, { once: true });
+    const handleCaptureLoad = (event: Event) => {
+      if ((event.target as HTMLElement | null)?.tagName === 'IMG') {
+        scheduleRefresh();
       }
-    });
+    };
+
+    root.addEventListener('load', handleCaptureLoad, true);
+    window.addEventListener('load', scheduleRefresh, { once: true });
+
+    let resizeObserver: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        scheduleRefresh();
+      });
+      resizeObserver.observe(root);
+    }
+
+    let cancelled = false;
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (!cancelled) scheduleRefresh();
+      });
+    }
 
     return () => {
+      cancelled = true;
       if (timer) window.clearTimeout(timer);
-      imgs.forEach((img) => img.removeEventListener('load', scheduleRefresh));
+      root.removeEventListener('load', handleCaptureLoad, true);
+      window.removeEventListener('load', scheduleRefresh);
+      resizeObserver?.disconnect();
     };
-  }, [reducedMotion]);
+  }, []);
 
   // Synchronize Hero typography detach + bottom planetary horizon reveal 1:1 with scrollY
   useEffect(() => {
@@ -209,7 +230,7 @@ export function HomePage() {
             ref={subtitleWrapRef}
             style={{ opacity: 'var(--hero-sub-op, 1)' as unknown as number }}
           >
-            <p className="mt-7 sm:mt-10 font-serif italic text-lg sm:text-3xl text-[#F5F3EF]/88 tracking-wide px-4">
+            <p className="mt-6 sm:mt-10 font-serif italic text-lg sm:text-3xl text-[#F5F3EF]/88 tracking-wide px-4">
               Nocturnal Textile Theatre — Aurelia Mahop Di Toro
             </p>
           </div>
@@ -218,7 +239,7 @@ export function HomePage() {
         <span ref={rightWordRef} className="hidden" aria-hidden="true" />
 
         <div
-          className="relative z-20 mt-10 sm:mt-0 sm:absolute sm:bottom-7 sm:left-1/2 sm:-translate-x-1/2 font-mono text-[10px] tracking-[0.34em] uppercase text-[#F5F3EF]/78 pointer-events-none"
+          className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 sm:bottom-7 z-20 font-mono text-[10px] tracking-[0.34em] uppercase text-[#F5F3EF]/78 whitespace-nowrap"
           style={{
             opacity:
               introActive && !reducedMotion
