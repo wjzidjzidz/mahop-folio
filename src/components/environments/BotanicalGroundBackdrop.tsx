@@ -17,6 +17,8 @@ export function BotanicalGroundBackdrop({ scrollProgress }: BotanicalGroundBackd
   const progressRef = useRef(scrollProgress);
   progressRef.current = scrollProgress;
 
+  const rootElRef = useRef<HTMLDivElement>(null);
+
   // Lightweight 2D Canvas floating chlorophyll spore & organic dew particle drift
   useEffect(() => {
     const canvas = sporeCanvasRef.current;
@@ -24,7 +26,30 @@ export function BotanicalGroundBackdrop({ scrollProgress }: BotanicalGroundBackd
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Pre-bake radial glow sprites once instead of allocating 48 createRadialGradient objects every frame
+    const makeGlowSprite = (innerRgba: string, midRgba: string | null) => {
+      const sprite = document.createElement('canvas');
+      sprite.width = 32;
+      sprite.height = 32;
+      const sCtx = sprite.getContext('2d');
+      if (sCtx) {
+        const g = sCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        g.addColorStop(0, innerRgba);
+        if (midRgba) g.addColorStop(0.45, midRgba);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        sCtx.fillStyle = g;
+        sCtx.fillRect(0, 0, 32, 32);
+      }
+      return sprite;
+    };
+
+    const acidSprite = makeGlowSprite('rgba(57, 255, 20, 0.9)', 'rgba(97, 143, 101, 0.4)');
+    const leafSprite = makeGlowSprite('rgba(147, 186, 150, 0.85)', null);
+
     let rafId = 0;
+    let isVisible = true;
+    let isDocHidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
+
     const resize = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
@@ -48,6 +73,7 @@ export function BotanicalGroundBackdrop({ scrollProgress }: BotanicalGroundBackd
     const start = performance.now();
 
     const draw = (now: number) => {
+      rafId = 0;
       const elapsed = reducedMotion ? 0 : (now - start) / 1000;
       const w = canvas.width;
       const h = canvas.height;
@@ -55,46 +81,66 @@ export function BotanicalGroundBackdrop({ scrollProgress }: BotanicalGroundBackd
 
       const pOffset = reducedMotion ? 0 : progressRef.current * 90;
 
-      spores.forEach((sp) => {
+      for (let i = 0; i < spores.length; i++) {
+        const sp = spores[i];
         const px =
           sp.xNorm * w +
           Math.sin(elapsed * sp.driftSpeed + sp.phase) * sp.swayAmp;
         const py =
           ((sp.yNorm * h - elapsed * 14 * sp.driftSpeed - pOffset + h * 2) % h);
         const alpha = sp.acid
-          ? 0.28 + Math.sin(elapsed * 1.4 + sp.phase) * 0.14
-          : 0.2 + Math.cos(elapsed * 1.1 + sp.phase) * 0.1;
+          ? 0.32 + Math.sin(elapsed * 1.4 + sp.phase) * 0.14
+          : 0.24 + Math.cos(elapsed * 1.1 + sp.phase) * 0.1;
 
         const r = sp.radius * 3.2;
-        const grad = ctx.createRadialGradient(px, py, 0, px, py, r);
-        if (sp.acid) {
-          grad.addColorStop(0, `rgba(57, 255, 20, ${alpha})`);
-          grad.addColorStop(0.45, `rgba(97, 143, 101, ${alpha * 0.45})`);
-          grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        } else {
-          grad.addColorStop(0, `rgba(147, 186, 150, ${alpha})`);
-          grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        }
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(px, py, r, 0, Math.PI * 2);
-        ctx.fill();
-      });
+        ctx.globalAlpha = Math.max(0.05, Math.min(1, alpha));
+        ctx.drawImage(sp.acid ? acidSprite : leafSprite, px - r, py - r, r * 2, r * 2);
+      }
+      ctx.globalAlpha = 1;
 
-      if (!reducedMotion) {
+      if (!reducedMotion && isVisible && !isDocHidden) {
         rafId = window.requestAnimationFrame(draw);
       }
     };
 
-    if (reducedMotion) {
-      draw(performance.now());
-    } else {
-      rafId = window.requestAnimationFrame(draw);
+    const syncLoop = () => {
+      if (reducedMotion) {
+        draw(performance.now());
+        return;
+      }
+      if (isVisible && !isDocHidden) {
+        if (!rafId) rafId = window.requestAnimationFrame(draw);
+      } else if (rafId) {
+        window.cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    };
+
+    let io: IntersectionObserver | undefined;
+    if (rootElRef.current && typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(
+        (entries) => {
+          isVisible = Boolean(entries[0]?.isIntersecting);
+          syncLoop();
+        },
+        { rootMargin: '250px 0px' }
+      );
+      io.observe(rootElRef.current);
     }
+
+    const onVis = () => {
+      isDocHidden = document.visibilityState === 'hidden';
+      syncLoop();
+    };
+    document.addEventListener('visibilitychange', onVis);
+
+    syncLoop();
 
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', onVis);
+      io?.disconnect();
     };
   }, [reducedMotion]);
 
@@ -105,6 +151,7 @@ export function BotanicalGroundBackdrop({ scrollProgress }: BotanicalGroundBackd
 
   return (
     <div
+      ref={rootElRef}
       aria-hidden="true"
       data-testid="botanical-ground-2d-stage"
       className="pointer-events-none absolute inset-0 overflow-hidden bg-[#020402]"

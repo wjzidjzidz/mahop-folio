@@ -31,7 +31,49 @@ function PlanetAtmosphereParticles({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Pre-bake glow sprites once to eliminate per-frame createRadialGradient allocations
+    const makeSprite = (stops: Array<[number, string]>) => {
+      const sp = document.createElement('canvas');
+      sp.width = 32;
+      sp.height = 32;
+      const sCtx = sp.getContext('2d');
+      if (sCtx) {
+        const g = sCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        stops.forEach(([off, col]) => g.addColorStop(off, col));
+        sCtx.fillStyle = g;
+        sCtx.fillRect(0, 0, 32, 32);
+      }
+      return sp;
+    };
+
+    const sprites =
+      planet === 'mercury'
+        ? [
+            makeSprite([
+              [0, 'rgba(255, 198, 128, 0.95)'],
+              [0.5, 'rgba(217, 138, 78, 0.45)'],
+              [1, 'rgba(0,0,0,0)'],
+            ]),
+            makeSprite([
+              [0, 'rgba(228, 214, 206, 0.8)'],
+              [1, 'rgba(0,0,0,0)'],
+            ]),
+          ]
+        : planet === 'mars'
+          ? [
+              makeSprite([
+                [0, 'rgba(232, 127, 62, 0.9)'],
+                [1, 'rgba(0,0,0,0)'],
+              ]),
+              makeSprite([
+                [0, 'rgba(198, 141, 104, 0.8)'],
+                [1, 'rgba(0,0,0,0)'],
+              ]),
+            ]
+          : null;
+
     let rafId = 0;
+    let docHidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
     const resize = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
@@ -55,6 +97,7 @@ function PlanetAtmosphereParticles({
     const start = performance.now();
 
     const draw = (now: number) => {
+      rafId = 0;
       const elapsed = reducedMotion ? 0 : (now - start) / 1000;
       const w = canvas.width;
       const h = canvas.height;
@@ -71,19 +114,10 @@ function PlanetAtmosphereParticles({
           py = (pt.yNorm * h - elapsed * 24 * pt.speed - pScroll * 95 + h * 3) % h;
           const alpha = 0.22 + (Math.sin(elapsed * 2.1 + pt.phase) * 0.14 + 0.14);
           const r = pt.size * 3.4;
-          const grad = ctx.createRadialGradient(px, py, 0, px, py, r);
-          if (pt.variant === 0) {
-            grad.addColorStop(0, `rgba(255, 198, 128, ${alpha})`);
-            grad.addColorStop(0.5, `rgba(217, 138, 78, ${alpha * 0.45})`);
-            grad.addColorStop(1, 'rgba(0,0,0,0)');
-          } else {
-            grad.addColorStop(0, `rgba(228, 214, 206, ${alpha * 0.8})`);
-            grad.addColorStop(1, 'rgba(0,0,0,0)');
+          if (sprites) {
+            ctx.globalAlpha = Math.max(0.05, Math.min(1, alpha));
+            ctx.drawImage(pt.variant === 0 ? sprites[0] : sprites[1], px - r, py - r, r * 2, r * 2);
           }
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(px, py, r, 0, Math.PI * 2);
-          ctx.fill();
         } else if (planet === 'uranus') {
           px = (pt.xNorm * w + elapsed * 14 * pt.speed + pScroll * 55 + w * 2) % w;
           py += Math.sin(elapsed * pt.speed + pt.phase) * 10 - pScroll * 40;
@@ -122,35 +156,38 @@ function PlanetAtmosphereParticles({
           py = (pt.yNorm * h + elapsed * 7 * pt.speed - pScroll * 45 + h * 2) % h;
           const alpha = 0.2 + Math.sin(elapsed * 1.4 + pt.phase) * 0.1;
           const r = pt.size * 3.1;
-          const grad = ctx.createRadialGradient(px, py, 0, px, py, r);
-          grad.addColorStop(
-            0,
-            pt.variant === 0
-              ? `rgba(232, 127, 62, ${alpha})`
-              : `rgba(198, 141, 104, ${alpha * 0.85})`
-          );
-          grad.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(px, py, r, 0, Math.PI * 2);
-          ctx.fill();
+          if (sprites) {
+            ctx.globalAlpha = Math.max(0.05, Math.min(1, alpha));
+            ctx.drawImage(pt.variant === 0 ? sprites[0] : sprites[1], px - r, py - r, r * 2, r * 2);
+          }
         }
       }
+      ctx.globalAlpha = 1;
 
-      if (!reducedMotion) {
+      if (!reducedMotion && !docHidden) {
         rafId = window.requestAnimationFrame(draw);
       }
     };
 
-    if (reducedMotion) {
-      draw(performance.now());
-    } else {
-      rafId = window.requestAnimationFrame(draw);
-    }
+    const syncVis = () => {
+      docHidden = document.visibilityState === 'hidden';
+      if (reducedMotion) {
+        draw(performance.now());
+      } else if (!docHidden) {
+        if (!rafId) rafId = window.requestAnimationFrame(draw);
+      } else if (rafId) {
+        window.cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    };
+
+    document.addEventListener('visibilitychange', syncVis);
+    syncVis();
 
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', syncVis);
     };
   }, [planet, reducedMotion, parallaxRef]);
 

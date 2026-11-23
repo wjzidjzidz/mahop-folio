@@ -17,6 +17,7 @@ import {
   computePuzzleTileMaskState,
   computeSolarSystemState,
   computeStarCompanionState,
+  evaluateWebGLFramePacing,
   getMappedMaterialSwatches,
   isPlanetaryScene,
   resolvePlanetaryRenderMode,
@@ -446,5 +447,66 @@ test('stepMobilePlanetaryScrubState prevents fast-swipe skipping, preserves slow
   assert.equal(reduced.sceneId, 'mars');
   assert.equal(reduced.progress, 0.55);
 });
+
+test('evaluateWebGLFramePacing requires sustained slow pacing before scaling down and ignores transient spikes or software GL', () => {
+  const slowWindow = Array.from({ length: 30 }, () => 42);
+  const healthyWindow = Array.from({ length: 45 }, () => 16.7);
+  const severeWindow = Array.from({ length: 30 }, () => 68);
+
+  // Single transient slow window does not drop from 'full'
+  const singleSpike = evaluateWebGLFramePacing({
+    currentTier: 'full',
+    sampleFrameMs: slowWindow,
+    consecutiveSlowWindows: 0,
+    isSoftwareGl: false,
+  });
+  assert.equal(singleSpike.nextTier, 'full');
+  assert.equal(singleSpike.nextConsecutiveSlowWindows, 1);
+  assert.equal(singleSpike.changed, false);
+
+  // Healthy window resets counter
+  const recovered = evaluateWebGLFramePacing({
+    currentTier: 'full',
+    sampleFrameMs: healthyWindow,
+    consecutiveSlowWindows: 1,
+    isSoftwareGl: false,
+  });
+  assert.equal(recovered.nextTier, 'full');
+  assert.equal(recovered.nextConsecutiveSlowWindows, 0);
+  assert.equal(recovered.changed, false);
+
+  // Two consecutive slow windows drop 'full' -> 'conservative'
+  const sustainedDrop = evaluateWebGLFramePacing({
+    currentTier: 'full',
+    sampleFrameMs: slowWindow,
+    consecutiveSlowWindows: 1,
+    isSoftwareGl: false,
+  });
+  assert.equal(sustainedDrop.nextTier, 'conservative');
+  assert.equal(sustainedDrop.nextConsecutiveSlowWindows, 0);
+  assert.equal(sustainedDrop.changed, true);
+
+  // Three consecutive severe windows in 'conservative' trigger 'fallback-2d'
+  const fallback = evaluateWebGLFramePacing({
+    currentTier: 'conservative',
+    sampleFrameMs: severeWindow,
+    consecutiveSlowWindows: 2,
+    isSoftwareGl: false,
+  });
+  assert.equal(fallback.nextTier, 'fallback-2d');
+  assert.equal(fallback.changed, true);
+
+  // Software GL (headless emulation / SwiftShader) never auto-escalates away from desktop WebGL coverage
+  const softwareBypass = evaluateWebGLFramePacing({
+    currentTier: 'full',
+    sampleFrameMs: severeWindow,
+    consecutiveSlowWindows: 5,
+    isSoftwareGl: true,
+  });
+  assert.equal(softwareBypass.nextTier, 'full');
+  assert.equal(softwareBypass.changed, false);
+});
+
+
 
 

@@ -8,7 +8,6 @@ import { useExhibitionStage } from '../../context/ExhibitionStageContext';
 import {
   computeChapterStageMetrics,
   computePlanetJourneyState,
-  PROJECT_ENVIRONMENTS,
   type EnvironmentSceneId,
   type PlanetKind,
 } from '../../utils/journeyLogic';
@@ -54,11 +53,6 @@ export function LetoileSection({ showHeader = true }: LetoileSectionProps) {
       metrics = computeChapterStageMetrics(progress, reducedMotion)
     ) => {
       setEnvironmentState(sceneId, progress, metrics.sceneOpacity, metrics.backdropDim);
-      window.dispatchEvent(
-        new CustomEvent('mahop:scene-accent', {
-          detail: PROJECT_ENVIRONMENTS[sceneId].accentHex,
-        })
-      );
     };
 
     const computeOverviewMetrics = (progress: number) => {
@@ -346,11 +340,6 @@ export function LetoileSection({ showHeader = true }: LetoileSectionProps) {
       portalProgress: 0,
     };
     setEnvironmentState(targetPlanet, 0, 0.96, 0.12);
-    window.dispatchEvent(
-      new CustomEvent('mahop:scene-accent', {
-        detail: PROJECT_ENVIRONMENTS[targetPlanet].accentHex,
-      })
-    );
 
     const stepFlight = (now: number) => {
       if (!planetJourneyRef.current.active) return;

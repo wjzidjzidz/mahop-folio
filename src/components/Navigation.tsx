@@ -5,6 +5,15 @@ import { CONTACT_INFO } from '../data/content';
 import { useExhibitionStage } from '../context/ExhibitionStageContext';
 import { X } from 'lucide-react';
 
+const prefetchedRoutes = new Set<string>();
+function prefetchRouteChunk(href: string) {
+  if (prefetchedRoutes.has(href)) return;
+  prefetchedRoutes.add(href);
+  if (href === '/work') void import('../pages/WorkIndexPage');
+  else if (href === '/material') void import('../pages/MaterialPage');
+  else if (href === '/about') void import('../pages/AboutPage');
+}
+
 export function Navigation() {
   const { currentPath, navigate } = useRouter();
   const { sceneId, introActive, setMenuOpen, setEnvironmentState } = useExhibitionStage();
@@ -254,6 +263,8 @@ export function Navigation() {
                 key={item.id}
                 type="button"
                 data-testid={item.testId}
+                onMouseEnter={() => prefetchRouteChunk(item.href)}
+                onFocus={() => prefetchRouteChunk(item.href)}
                 onClick={item.onSelect}
                 className={`group text-left min-h-[56px] w-full flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 py-2 border-b border-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-[#F5F3EF] focus-visible:outline-offset-4 ${
                   item.isActive

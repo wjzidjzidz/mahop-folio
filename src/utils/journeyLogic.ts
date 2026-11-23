@@ -1370,4 +1370,101 @@ export function stepMobilePlanetaryScrubState(
   };
 }
 
+export type WebGLQualityTier = 'full' | 'conservative' | 'fallback-2d';
+
+export interface WebGLFramePacingInput {
+  currentTier: WebGLQualityTier;
+  /** Recent frame durations in ms recorded AFTER initial warm-up settle */
+  sampleFrameMs: number[];
+  /** Number of consecutive degraded evaluation windows observed so far */
+  consecutiveSlowWindows: number;
+  /** Whether the browser is using a software WebGL rasterizer (e.g., SwiftShader/llvmpipe) */
+  isSoftwareGl: boolean;
+}
+
+export interface WebGLFramePacingResult {
+  nextTier: WebGLQualityTier;
+  nextConsecutiveSlowWindows: number;
+  avgFrameMs: number;
+  slowFrameRatio: number;
+  changed: boolean;
+}
+
+/**
+ * Hysteresis-protected Three.js frame pacing controller for desktop/laptop hardware:
+ * - Never reacts to a single transient spike or startup shader warm-up.
+ * - Ignores software rasterizers (handled via static demand rendering / non-stalling caps).
+ * - Escalates cleanly once: 'full' -> 'conservative' (lower DPR, no HDR bloom, lighter segments)
+ *   after sustained slow windows; only falls back to 'fallback-2d' if even 'conservative'
+ *   remains severely stalled across sustained windows. Locks once escalated so visuals never flicker.
+ */
+export function evaluateWebGLFramePacing(
+  input: WebGLFramePacingInput
+): WebGLFramePacingResult {
+  const { currentTier, sampleFrameMs, consecutiveSlowWindows, isSoftwareGl } = input;
+
+  if (isSoftwareGl || currentTier === 'fallback-2d' || sampleFrameMs.length < 24) {
+    return {
+      nextTier: currentTier,
+      nextConsecutiveSlowWindows: 0,
+      avgFrameMs: 0,
+      slowFrameRatio: 0,
+      changed: false,
+    };
+  }
+
+  let total = 0;
+  let slowCount = 0;
+  let severeCount = 0;
+  for (let i = 0; i < sampleFrameMs.length; i++) {
+    const ms = Math.min(250, Math.max(0, sampleFrameMs[i]));
+    total += ms;
+    if (ms > 36) slowCount++;
+    if (ms > 64) severeCount++;
+  }
+
+  const avgFrameMs = Number((total / sampleFrameMs.length).toFixed(2));
+  const slowFrameRatio = Number((slowCount / sampleFrameMs.length).toFixed(3));
+  const severeFrameRatio = severeCount / sampleFrameMs.length;
+
+  const isDegradedWindow =
+    currentTier === 'full'
+      ? slowFrameRatio >= 0.48 || avgFrameMs >= 38
+      : severeFrameRatio >= 0.55 || avgFrameMs >= 58;
+
+  if (!isDegradedWindow) {
+    return {
+      nextTier: currentTier,
+      nextConsecutiveSlowWindows: 0,
+      avgFrameMs,
+      slowFrameRatio,
+      changed: false,
+    };
+  }
+
+  const nextConsecutive = consecutiveSlowWindows + 1;
+  const requiredWindows = currentTier === 'full' ? 2 : 3;
+
+  if (nextConsecutive >= requiredWindows) {
+    const nextTier: WebGLQualityTier =
+      currentTier === 'full' ? 'conservative' : 'fallback-2d';
+    return {
+      nextTier,
+      nextConsecutiveSlowWindows: 0,
+      avgFrameMs,
+      slowFrameRatio,
+      changed: true,
+    };
+  }
+
+  return {
+    nextTier: currentTier,
+    nextConsecutiveSlowWindows: nextConsecutive,
+    avgFrameMs,
+    slowFrameRatio,
+    changed: false,
+  };
+}
+
+
 

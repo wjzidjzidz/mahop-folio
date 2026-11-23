@@ -57,7 +57,12 @@ export function MaterialTableSection({
         end: 'bottom bottom',
         scrub: true,
         onUpdate: (self) => {
-          setDismantleProgress(self.progress);
+          const next = Number(self.progress.toFixed(3));
+          setDismantleProgress((prev) =>
+            prev === next || (Math.abs(prev - next) < 0.003 && next > 0 && next < 1)
+              ? prev
+              : next
+          );
         },
       });
     }, stageRef);

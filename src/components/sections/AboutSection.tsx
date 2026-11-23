@@ -74,8 +74,9 @@ export function AboutSection({
           >
             <PortfolioImage
               asset={PORTFOLIO_ASSETS.about.primary}
+              eager={Boolean(immediateReveal && !embeddedInChamber)}
               className="w-auto max-h-[32vh] sm:max-h-[42vh] md:max-h-[54vh] lg:max-h-[60vh] object-contain"
-              eager
+              sizes="(max-width: 767px) 75vw, 34vw"
             />
           </div>
 

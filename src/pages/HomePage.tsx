@@ -10,7 +10,6 @@ import { useExhibitionStage } from '../context/ExhibitionStageContext';
 import {
   computeHeroHorizonRevealMetrics,
   computeHeroStarDetachState,
-  PROJECT_ENVIRONMENTS,
 } from '../utils/journeyLogic';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
@@ -98,11 +97,6 @@ export function HomePage() {
 
       if (!planetJourneyRef.current.active) {
         setEnvironmentState('gateway', rawGatewayProgress, horizon.sceneOpacity, 0);
-        window.dispatchEvent(
-          new CustomEvent('mahop:scene-accent', {
-            detail: PROJECT_ENVIRONMENTS.gateway.accentHex,
-          })
-        );
       }
     };
 

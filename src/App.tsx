@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { RouterProvider, useRouter } from './router/RouterContext';
 import { ExhibitionStageProvider, useExhibitionStage } from './context/ExhibitionStageContext';
 import { Navigation } from './components/Navigation';
@@ -7,15 +7,30 @@ import { JourneyStarCompanion } from './components/JourneyStarCompanion';
 import { IntroLoader } from './components/IntroLoader';
 import { ProjectEnvironmentHost } from './components/three/ProjectEnvironmentHost';
 
-// Pages
+// HomePage is kept eager for instant / route paint; secondary archive routes are code-split cleanly.
 import { HomePage } from './pages/HomePage';
-import { WorkIndexPage } from './pages/WorkIndexPage';
-import { LetoileMahoPage } from './pages/LetoileMahoPage';
-import { MahStarPPage } from './pages/MahStarPPage';
-import { AuroraPage } from './pages/AuroraPage';
-import { MaterialPage } from './pages/MaterialPage';
-import { AboutPage } from './pages/AboutPage';
-import { NotFoundPage } from './pages/NotFoundPage';
+
+const WorkIndexPage = lazy(() =>
+  import('./pages/WorkIndexPage').then((m) => ({ default: m.WorkIndexPage }))
+);
+const LetoileMahoPage = lazy(() =>
+  import('./pages/LetoileMahoPage').then((m) => ({ default: m.LetoileMahoPage }))
+);
+const MahStarPPage = lazy(() =>
+  import('./pages/MahStarPPage').then((m) => ({ default: m.MahStarPPage }))
+);
+const AuroraPage = lazy(() =>
+  import('./pages/AuroraPage').then((m) => ({ default: m.AuroraPage }))
+);
+const MaterialPage = lazy(() =>
+  import('./pages/MaterialPage').then((m) => ({ default: m.MaterialPage }))
+);
+const AboutPage = lazy(() =>
+  import('./pages/AboutPage').then((m) => ({ default: m.AboutPage }))
+);
+const NotFoundPage = lazy(() =>
+  import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
+);
 
 interface RouteMetadata {
   title: string;
@@ -142,7 +157,7 @@ function AppContent({
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-[#F5F3EF]">
-      {/* Persistent root Three.js stage shared cleanly across WebGL routes (hidden automatically on 2D routes) */}
+      {/* Persistent root WebGL / 2D Planetary stage */}
       <ProjectEnvironmentHost />
 
       {showIntro && <IntroLoader onComplete={handleIntroComplete} />}
@@ -151,9 +166,11 @@ function AppContent({
 
       <Navigation />
       <main id="main-content" className="relative z-10 flex-1 focus:outline-none">
-        <div key={normalizedPath} className="animate-page-enter">
-          {renderRoute()}
-        </div>
+        <Suspense fallback={<div className="min-h-screen bg-black" aria-hidden="true" />}>
+          <div key={normalizedPath} className="animate-page-enter">
+            {renderRoute()}
+          </div>
+        </Suspense>
       </main>
       <Footer />
     </div>

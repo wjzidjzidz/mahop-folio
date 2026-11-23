@@ -7,7 +7,6 @@ import { PROJECTS } from '../../data/content';
 import { useExhibitionStage } from '../../context/ExhibitionStageContext';
 import { WhiteCollageBackdrop } from '../environments/WhiteCollageBackdrop';
 import { BotanicalGroundBackdrop } from '../environments/BotanicalGroundBackdrop';
-import { PROJECT_ENVIRONMENTS } from '../../utils/journeyLogic';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -34,6 +33,10 @@ export function MahStarPSection({ showHeader = true }: MahStarPSectionProps) {
 
     const ctx = gsap.context(() => {
       // ACT I: Pure 2D Fluorescent Green / Black / White stage — pause & hide WebGL
+      const setQuantizedWhite = (p: number) => {
+        const q = Number(p.toFixed(3));
+        setWhiteProgress((prev) => (Math.abs(prev - q) >= 0.004 || q === 0 || q === 1 ? q : prev));
+      };
       ScrollTrigger.create({
         trigger: actOne,
         start: 'top 62%',
@@ -41,19 +44,9 @@ export function MahStarPSection({ showHeader = true }: MahStarPSectionProps) {
         scrub: true,
         onEnter: () => {
           setEnvironmentState('white-collage', 0.05, 0, 0);
-          window.dispatchEvent(
-            new CustomEvent('mahop:scene-accent', {
-              detail: PROJECT_ENVIRONMENTS['white-collage'].accentHex,
-            })
-          );
         },
         onEnterBack: () => {
           setEnvironmentState('white-collage', 0.92, 0, 0);
-          window.dispatchEvent(
-            new CustomEvent('mahop:scene-accent', {
-              detail: PROJECT_ENVIRONMENTS['white-collage'].accentHex,
-            })
-          );
         },
         onToggle: (self) => {
           if (self.isActive) {
@@ -61,7 +54,7 @@ export function MahStarPSection({ showHeader = true }: MahStarPSectionProps) {
           }
         },
         onUpdate: (self) => {
-          setWhiteProgress(self.progress);
+          setQuantizedWhite(self.progress);
           if (self.isActive) {
             setEnvironmentState('white-collage', self.progress, 0, 0);
           }
@@ -104,13 +97,9 @@ export function MahStarPSection({ showHeader = true }: MahStarPSectionProps) {
 
       // ACT II: Pure 2D Deep-Black & Fluorescent-Green Botanical Stage (Zero WebGL)
       const emitNature = (progress: number) => {
-        setNatureProgress(progress);
+        const q = Number(progress.toFixed(3));
+        setNatureProgress((prev) => (Math.abs(prev - q) >= 0.004 || q === 0 || q === 1 ? q : prev));
         setEnvironmentState('editorial-nature', progress, 0, 0);
-        window.dispatchEvent(
-          new CustomEvent('mahop:scene-accent', {
-            detail: PROJECT_ENVIRONMENTS['editorial-nature'].accentHex,
-          })
-        );
       };
 
       ScrollTrigger.create({
@@ -124,7 +113,8 @@ export function MahStarPSection({ showHeader = true }: MahStarPSectionProps) {
           if (self.isActive) emitNature(self.progress);
         },
         onUpdate: (self) => {
-          setNatureProgress(self.progress);
+          const q = Number(self.progress.toFixed(3));
+          setNatureProgress((prev) => (Math.abs(prev - q) >= 0.004 || q === 0 || q === 1 ? q : prev));
           if (self.isActive) emitNature(self.progress);
         },
       });

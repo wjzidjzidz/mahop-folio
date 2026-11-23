@@ -32,11 +32,14 @@ export interface PlanetJourneySyncState {
   portalProgress: number;
 }
 
+export type StageVisualsListener = (opacity: number, dim: number) => void;
+
 interface ExhibitionStageContextValue {
   sceneId: EnvironmentSceneId;
-  sceneOpacity: number;
-  backdropDim: number;
   scrollProgressRef: React.MutableRefObject<number>;
+  sceneOpacityRef: React.MutableRefObject<number>;
+  backdropDimRef: React.MutableRefObject<number>;
+  subscribeStageVisuals: (listener: StageVisualsListener) => () => void;
   introStateRef: React.MutableRefObject<IntroSyncState>;
   introStarGuideRef: React.MutableRefObject<IntroStarGuideState>;
   planetJourneyRef: React.MutableRefObject<PlanetJourneySyncState>;
@@ -95,9 +98,10 @@ const DEFAULT_PLANET_JOURNEY: PlanetJourneySyncState = {
 
 const ExhibitionStageContext = createContext<ExhibitionStageContextValue>({
   sceneId: 'gateway',
-  sceneOpacity: 1,
-  backdropDim: 0.12,
   scrollProgressRef: { current: 0 },
+  sceneOpacityRef: { current: 1 },
+  backdropDimRef: { current: 0 },
+  subscribeStageVisuals: () => () => {},
   introStateRef: { current: { ...DEFAULT_INTRO_SYNC } },
   introStarGuideRef: { current: { ...DEFAULT_INTRO_STAR_GUIDE } },
   planetJourneyRef: { current: { ...DEFAULT_PLANET_JOURNEY } },
@@ -120,11 +124,14 @@ export function ExhibitionStageProvider({
   const [sceneId, setSceneId] = useState<EnvironmentSceneId>(() =>
     defaultSceneForPath(currentPath)
   );
-  const [sceneOpacity, setSceneOpacity] = useState(1);
-  const [backdropDim, setBackdropDim] = useState(0);
   const [introActive, setIntroActiveState] = useState<boolean>(initialIntroActive);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
+
   const scrollProgressRef = useRef<number>(0);
+  const sceneOpacityRef = useRef<number>(1);
+  const backdropDimRef = useRef<number>(0);
+  const lastEmittedSceneRef = useRef<EnvironmentSceneId>(sceneId);
+  const visualListenersRef = useRef<Set<StageVisualsListener>>(new Set());
 
   const introStateRef = useRef<IntroSyncState>(
     initialIntroActive
@@ -149,6 +156,20 @@ export function ExhibitionStageProvider({
 
   const cancelPlanetJourneyRef = useRef<(() => void) | null>(null);
 
+  const subscribeStageVisuals = useCallback((listener: StageVisualsListener) => {
+    visualListenersRef.current.add(listener);
+    listener(sceneOpacityRef.current, backdropDimRef.current);
+    return () => {
+      visualListenersRef.current.delete(listener);
+    };
+  }, []);
+
+  const notifyVisualListeners = useCallback(() => {
+    const op = sceneOpacityRef.current;
+    const dim = backdropDimRef.current;
+    visualListenersRef.current.forEach((fn) => fn(op, dim));
+  }, []);
+
   const setIntroActive = useCallback((active: boolean) => {
     setIntroActiveState(active);
     if (!active) {
@@ -171,10 +192,12 @@ export function ExhibitionStageProvider({
     planetJourneyRef.current = { ...DEFAULT_PLANET_JOURNEY };
 
     const nextScene = defaultSceneForPath(currentPath);
+    lastEmittedSceneRef.current = nextScene;
     setSceneId(nextScene);
-    setSceneOpacity(nextScene === 'ambient-archive' ? 0 : 1);
-    setBackdropDim(0);
+    sceneOpacityRef.current = nextScene === 'ambient-archive' ? 0 : 1;
+    backdropDimRef.current = 0;
     scrollProgressRef.current = 0;
+    notifyVisualListeners();
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
@@ -182,8 +205,9 @@ export function ExhibitionStageProvider({
           detail: PROJECT_ENVIRONMENTS[nextScene].accentHex,
         })
       );
+      window.dispatchEvent(new CustomEvent('mahop:env-progress'));
     }
-  }, [currentPath]);
+  }, [currentPath, notifyVisualListeners]);
 
   const setEnvironmentState = useCallback(
     (
@@ -193,23 +217,46 @@ export function ExhibitionStageProvider({
       dim?: number
     ) => {
       scrollProgressRef.current = progress;
-      setSceneId((prev) => (prev === nextScene ? prev : nextScene));
-      if (typeof opacity === 'number') {
-        setSceneOpacity(opacity);
+
+      let visualsChanged = false;
+      if (typeof opacity === 'number' && Math.abs(opacity - sceneOpacityRef.current) > 0.0005) {
+        sceneOpacityRef.current = opacity;
+        visualsChanged = true;
       }
-      if (typeof dim === 'number') {
-        setBackdropDim(dim);
+      if (typeof dim === 'number' && Math.abs(dim - backdropDimRef.current) > 0.0005) {
+        backdropDimRef.current = dim;
+        visualsChanged = true;
+      }
+      if (visualsChanged) {
+        notifyVisualListeners();
+      }
+
+      if (lastEmittedSceneRef.current !== nextScene) {
+        lastEmittedSceneRef.current = nextScene;
+        setSceneId(nextScene);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('mahop:scene-accent', {
+              detail: PROJECT_ENVIRONMENTS[nextScene].accentHex,
+            })
+          );
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('mahop:env-progress'));
       }
     },
-    []
+    [notifyVisualListeners]
   );
 
   const value = useMemo(
     () => ({
       sceneId,
-      sceneOpacity,
-      backdropDim,
       scrollProgressRef,
+      sceneOpacityRef,
+      backdropDimRef,
+      subscribeStageVisuals,
       introStateRef,
       introStarGuideRef,
       planetJourneyRef,
@@ -220,7 +267,14 @@ export function ExhibitionStageProvider({
       setMenuOpen,
       setEnvironmentState,
     }),
-    [sceneId, sceneOpacity, backdropDim, introActive, setIntroActive, menuOpen, setEnvironmentState]
+    [
+      sceneId,
+      subscribeStageVisuals,
+      introActive,
+      setIntroActive,
+      menuOpen,
+      setEnvironmentState,
+    ]
   );
 
   return (

@@ -6,7 +6,6 @@ import { PORTFOLIO_ASSETS } from '../../data/portfolioAssets';
 import { PROJECTS } from '../../data/content';
 import { useExhibitionStage } from '../../context/ExhibitionStageContext';
 import { AuroraPunkBackdrop } from '../environments/AuroraPunkBackdrop';
-import { PROJECT_ENVIRONMENTS } from '../../utils/journeyLogic';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -29,6 +28,10 @@ export function AuroraSection({ showHeader = true }: AuroraSectionProps) {
 
     const ctx = gsap.context(() => {
       // Pure 2D Punk World — explicitly keep root WebGL canvas hidden & paused
+      const setQuantizedAurora = (p: number) => {
+        const q = Number(p.toFixed(3));
+        setAuroraProgress((prev) => (Math.abs(prev - q) >= 0.004 || q === 0 || q === 1 ? q : prev));
+      };
       ScrollTrigger.create({
         trigger: section,
         start: 'top 62%',
@@ -36,32 +39,17 @@ export function AuroraSection({ showHeader = true }: AuroraSectionProps) {
         scrub: true,
         onEnter: () => {
           setEnvironmentState('aurora-punk', 0.05, 0, 0);
-          window.dispatchEvent(
-            new CustomEvent('mahop:scene-accent', {
-              detail: PROJECT_ENVIRONMENTS['aurora-punk'].accentHex,
-            })
-          );
         },
         onEnterBack: () => {
           setEnvironmentState('aurora-punk', 0.92, 0, 0);
-          window.dispatchEvent(
-            new CustomEvent('mahop:scene-accent', {
-              detail: PROJECT_ENVIRONMENTS['aurora-punk'].accentHex,
-            })
-          );
         },
         onToggle: (self) => {
           if (self.isActive) {
             setEnvironmentState('aurora-punk', self.progress, 0, 0);
-            window.dispatchEvent(
-              new CustomEvent('mahop:scene-accent', {
-                detail: PROJECT_ENVIRONMENTS['aurora-punk'].accentHex,
-              })
-            );
           }
         },
         onUpdate: (self) => {
-          setAuroraProgress(self.progress);
+          setQuantizedAurora(self.progress);
           if (self.isActive) {
             setEnvironmentState('aurora-punk', self.progress, 0, 0);
           }

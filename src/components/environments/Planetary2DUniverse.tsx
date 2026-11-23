@@ -199,8 +199,8 @@ export function Planetary2DUniverse({
     []
   );
 
-  // Continuous single-rAF smooth scrubbing loop (phone uses frame-delta damping; tablet keeps native tracking)
-  // Using (reducedMotion ? sceneId : null) updates static reduced-motion frames cleanly without restarting the active rAF loop.
+  // Auto-settling smooth scrubbing loop (phone uses frame-delta damping; tablet keeps native tracking).
+  // Runs only while target differs from rendered scrub or during direct flight, saving CPU when idle.
   const reducedMotionSceneKey = reducedMotion ? sceneId : null;
   useEffect(() => {
     if (!active) return;
@@ -208,6 +208,7 @@ export function Planetary2DUniverse({
     let lastTime = performance.now();
 
     const applyFrame = () => {
+      rafId = 0;
       const now = performance.now();
       const dtSec = Math.max(0.001, Math.min(0.05, (now - lastTime) / 1000));
       lastTime = now;
@@ -292,16 +293,35 @@ export function Planetary2DUniverse({
         portalVeilRef.current.style.opacity = String(st.portalVeilOpacity);
       }
 
-      if (!reducedMotion) {
+      const settled =
+        nextScrub.sceneId === targetScene &&
+        Math.abs(nextScrub.progress - targetProgress) < 0.0008 &&
+        !isDirectFlight;
+
+      if (!reducedMotion && !settled) {
+        rafId = window.requestAnimationFrame(applyFrame);
+      }
+    };
+
+    const scheduleTick = () => {
+      if (!rafId) {
+        lastTime = performance.now();
         rafId = window.requestAnimationFrame(applyFrame);
       }
     };
 
     applyFrame();
+    window.addEventListener('mahop:env-progress', scheduleTick);
+    window.addEventListener('scroll', scheduleTick, { passive: true });
+    window.addEventListener('resize', scheduleTick, { passive: true });
+
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener('mahop:env-progress', scheduleTick);
+      window.removeEventListener('scroll', scheduleTick);
+      window.removeEventListener('resize', scheduleTick);
     };
-  }, [active, deviceTier, scrollProgressRef, planetJourneyRef, reducedMotion, reducedMotionSceneKey]);
+  }, [active, deviceTier, sceneId, scrollProgressRef, planetJourneyRef, reducedMotion, reducedMotionSceneKey]);
 
   const activeSpec = PLANET_SLOTS.find((s) => s.id === activeChapterPlanet);
   const accentHex = PROJECT_ENVIRONMENTS[renderedSceneId]?.accentHex || '#F5F3EF';
